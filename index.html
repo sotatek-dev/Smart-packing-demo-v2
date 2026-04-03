@@ -1,0 +1,1172 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TimeX Packing Optimizer</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --primary: #0066ff;
+      --primary-dark: #0052cc;
+      --secondary: #00c9a7;
+      --danger: #ff4757;
+      --warning: #ffa502;
+      --bg-main: #f8fafc;
+      --bg-panel: #ffffff;
+      --border: #e2e8f0;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --text-muted: #94a3b8;
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --mono: "JetBrains Mono", monospace;
+      --sans: "IBM Plex Sans", sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg-main);
+      color: var(--text-primary);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-y: hidden;
+      overflow-x: auto;
+      min-width: 1024px;
+    }
+
+    header {
+      height: 56px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .logo {
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .app-container {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 360px 1fr 220px;
+      overflow: hidden;
+      min-height: 0;
+      min-width: 0;
+    }
+
+    .sidebar {
+      background: #fff;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .sidebar-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      min-height: 0;
+    }
+
+    .footer-actions {
+      padding: 16px 24px;
+      background: #fff;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 12px;
+      flex-shrink: 0;
+      position: sticky;
+      bottom: 0;
+      z-index: 10;
+    }
+
+    .main-view {
+      position: relative;
+      background: #f1f5f9;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border);
+    }
+
+    .right-panel {
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+    }
+
+    .vis-header {
+      height: 64px;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      justify-content: space-between;
+    }
+
+    #three-container {
+      flex: 1;
+      position: relative;
+    }
+
+    .sec-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      letter-spacing: 0.5px;
+    }
+
+    .box-card {
+      padding: 6px 8px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-bottom: 0px;
+      cursor: default;
+      transition: 0.2s;
+    }
+
+    .box-card.used {
+      border-color: var(--primary);
+      background: #f0f7ff;
+      box-shadow: inset 0 0 0 1px var(--primary);
+    }
+
+    #container-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .sku-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-left-width: 4px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .sku-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .sku-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .sku-dim {
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-family: var(--mono);
+      margin-top: 1px;
+    }
+
+    .sku-placed {
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 3px;
+      color: #e05;
+    }
+
+    .sku-stepper {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .stepper-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      font-weight: 600;
+      transition: 0.15s;
+    }
+
+    .stepper-btn:hover {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .qty-input {
+      width: 48px;
+      padding: 4px 2px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 600;
+      background: #f8fafc;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    .footer-actions {
+      padding: 20px;
+      border-top: 1px solid var(--border);
+      background: #fff;
+      display: flex;
+      gap: 10px;
+    }
+
+    .pallet-tabs-bar {
+      display: flex;
+      gap: 8px;
+      padding: 8px 24px;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+
+    .pallet-tab {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .pallet-tab.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .toast-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+    }
+
+    .toast {
+      background: #1e293b;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      margin-top: 8px;
+      box-shadow: var(--shadow-md);
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+      }
+
+      to {
+        transform: translateX(0);
+      }
+    }
+
+    .metric-card {
+      text-align: center;
+    }
+
+    .metric-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #024db5;
+      line-height: 1.1;
+      font-family: var(--mono);
+    }
+
+    .metric-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+
+    .rp-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      background: #fff;
+    }
+
+    .rp-card-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .rp-card-value {
+      font-size: 28px;
+      font-weight: 600;
+      color: #0f172a;
+      line-height: 1;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .rp-card-unit {
+      font-size: 14px;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    .rp-card-value.green {
+      color: #00c9a7;
+    }
+
+    .rp-card-sub {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 6px;
+    }
+
+    #vis-empty {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      z-index: 5;
+    }
+
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.4);
+      z-index: 999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #fff;
+      width: 780px;
+      max-width: 90vw;
+      max-height: 90vh;
+      border-radius: 12px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      font-size: 18px;
+      color: var(--text-primary);
+      margin: 0;
+      font-weight: 700;
+    }
+
+    .btn-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: 0.2s;
+    }
+
+    .btn-close:hover {
+      color: #e11d48;
+    }
+
+    .modal-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      background: #f8fafc;
+    }
+
+    .modal-tab {
+      padding: 12px 24px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: 0.2s;
+    }
+
+    .modal-tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      background: #fff;
+    }
+
+    .modal-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      background: #f8fafc;
+    }
+
+    .settings-grid {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .boxes-grid {
+      grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 32px;
+    }
+
+    .items-grid {
+      grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 32px;
+    }
+
+    .settings-grid-header {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--sans);
+    }
+
+    .sg-input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px;
+      font-family: var(--mono);
+      font-size: 12px;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    .sg-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(0, 102, 255, 0.1);
+    }
+
+    .btn-remove-row {
+      color: #94a3b8;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
+    }
+
+    .btn-remove-row:hover {
+      color: #e11d48;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="logo">TimeX Packing Optimizer</div>
+    <div style="display: flex; gap: 12px">
+      <button class="btn btn-outline" id="btn-settings">Settings</button>
+    </div>
+  </header>
+
+  <div class="app-container">
+    <div class="sidebar">
+      <div class="sidebar-scroll">
+        <div class="sec">
+          <div class="sec-title">Available Boxes</div>
+          <div id="container-list"></div>
+        </div>
+        <div class="sec-title" style="margin-top: 24px">Select items</div>
+        <div id="sku-list"></div>
+      </div>
+      <div class="footer-actions">
+        <button class="btn btn-outline" id="btn-reset" style="flex:1">Reset</button>
+        <button class="btn btn-primary" id="btn-optimize" style="flex:2">Find Best Box</button>
+      </div>
+    </div>
+
+    <div class="main-view">
+      <div class="vis-header">
+        <div>
+          <div style="font-weight: 600; font-size: 14px">3D Layout Preview</div>
+          <div id="vis-stats" style="font-size: 12px; color: var(--text-muted)">Optimization pending...</div>
+        </div>
+        <div id="summary-metrics"
+          style="display: flex; gap: 32px; border-left: 1px solid var(--border); padding-left: 32px">
+          <div class="metric-card">
+            <div class="metric-value" id="header-total-weight">—</div>
+            <div class="metric-label">Total Weight</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value" id="header-total-cost">—</div>
+            <div class="metric-label">Total Cost</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="pallet-tabs-bar" class="pallet-tabs-bar" style="display: none"></div>
+
+      <div id="three-container">
+        <div id="vis-empty">
+          <div style="font-size: 14px; font-weight: 600; color: var(--text-secondary)">No Packed Containers Yet</div>
+          <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">Enter quantities and run optimization
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="right-panel" id="right-panel">
+      <div class="sec-title" style="margin-bottom: 24px;">Container Analytics</div>
+      <div class="rp-card">
+        <div class="rp-card-title">Used Space</div>
+        <div class="rp-card-value green"><span id="rp-eff">—</span><span class="rp-card-unit">%</span></div>
+        <div class="rp-card-sub">Of container</div>
+      </div>
+      <div class="rp-card">
+        <div class="rp-card-title">Total Weight</div>
+        <div class="rp-card-value"><span id="rp-weight">—</span><span class="rp-card-unit" style="font-size:16px; margin-left:4px;">kg</span></div>
+        <div class="rp-card-sub">Items inside container</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="settings-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>System Settings</h3>
+        <button class="btn-close" onclick="closeSettings()">&times;</button>
+      </div>
+      <div class="modal-tabs">
+        <div class="modal-tab active" onclick="switchSettingsTab('boxes')" id="tab-boxes">Containers</div>
+        <div class="modal-tab" onclick="switchSettingsTab('items')" id="tab-items">Items/SKUs</div>
+      </div>
+      <div class="modal-body" id="settings-body-boxes">
+        <div class="settings-grid boxes-grid" id="tb-boxes"></div>
+        <button class="btn btn-outline" style="padding: 8px 16px; font-size:12px;" onclick="addSettingBox()">+ Add
+          Container</button>
+      </div>
+      <div class="modal-body" id="settings-body-items" style="display:none">
+        <div class="settings-grid items-grid" id="tb-items"></div>
+        <button class="btn btn-outline" style="padding: 8px 16px; font-size:12px;" onclick="addSettingItem()">+ Add
+          Item</button>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeSettings()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveSettings()">Save Configuration</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <script>
+    // Supabase Init
+    const supabaseUrl = 'https://jgfuwcalnaecocsmbuew.supabase.co';
+    const supabaseKey = 'sb_publishable_U27Vs8F2NaTmQlQ3Xp3oYg_eFnNvA3U';
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+    // Data Structures
+    let WATCH_SKUS = [
+      { id: "T1", name: "TW2R42500", width: 8.61, length: 7.49, height: 6.4, weight: 0.054, color: "#3B82F6" },
+      { id: "T2", name: "TW2W99600VQ", width: 10.6, length: 10.39, height: 7.8, weight: 0.22, color: "#10B981" },
+      { id: "T3", name: "TW2R63100", width: 3.99, length: 10.01, height: 6, weight: 0.045, color: "#F59E0B" },
+      { id: "T4", name: "T2P370", width: 19.1, length: 3.10, height: 0.79, weight: 0.032, color: "#8B5CF6" },
+      { id: "T5", name: "T2N651", width: 9.65, length: 7.62, height: 7.62, weight: 0.045, color: "#EC4899" }
+    ];
+
+    let BOX_TEMPLATES = [
+      { id: "C02P", name: "2 PACK POD SELF LOCKING", code: "C02P", width: 14.2, length: 8.9, height: 11, weight: 0.28, price: 8, active: true },
+      { id: "C04P", name: "4 PACK POD SELF LOCKING", code: "C04P", width: 17.3, length: 14.2, height: 11, weight: 0.54, price: 8, active: true },
+      { id: "C06P", name: "6 PACK POD SELF LOCKING", code: "C06P", width: 22.8, length: 16.4, height: 11, weight: 0.82, price: 8, active: true },
+      { id: "C10P", name: "10 PACK POD SELF LOCKING", code: "C10P", width: 34.5, length: 16.4, height: 11, weight: 1.24, price: 8, active: true },
+      { id: "C15P", name: "15 PACK POD SELF LOCKING", code: "C15P", width: 36.3, length: 23.9, height: 11, weight: 1.91, price: 8, active: true },
+      { id: "C25R", name: "25 PACK POD RSC", code: "C25R", width: 38.9, length: 33.4, height: 11, weight: 2.86, price: 8, active: true },
+      { id: "C50R", name: "50 PACK POD RSC", code: "C50R", width: 38.9, length: 33.4, height: 19.3, weight: 5.02, price: 8, active: true },
+      { id: "C40R", name: "40 PACK POD RSC", code: "C40R", width: 38.9, length: 27, height: 19.3, weight: 4.05, price: 8, active: true }
+    ];
+
+    try {
+      const savedBoxes = localStorage.getItem('timex_boxes');
+      if (savedBoxes) BOX_TEMPLATES = JSON.parse(savedBoxes);
+
+      const savedItems = localStorage.getItem('timex_skus');
+      if (savedItems) WATCH_SKUS = JSON.parse(savedItems);
+    } catch (e) { console.error('Error loading config:', e); }
+
+    const S = {
+      itemQtys: {},
+      boxes: [...BOX_TEMPLATES],
+      optimized: false,
+      palletsData: [],
+      activePalletIdx: 0,
+      layout: [],
+      bestBoxId: null
+    };
+
+    // UI Init Logic
+    function initBoxContainers(usedCounts = {}) {
+      const list = document.getElementById("container-list");
+      if (!list) return;
+      list.innerHTML = S.boxes.map(b => {
+        const used = usedCounts[b.id] || 0;
+        const usedClass = used > 0 ? "used" : "";
+        const badge = used > 0 ? `<span style="color:var(--primary); font-weight:700; margin-left:4px;">x${used}</span>` : '';
+        return `
+            <div class="box-card ${usedClass}">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
+                <span style="font-family:var(--mono); font-weight:700; font-size:11px; color:#0f172a;">${b.code}${badge}</span>
+                <span style="font-weight:600; font-size:10px; color:#475569;">$${b.price}</span>
+              </div>
+              <div style="font-size:9px; color:#64748b; font-family:var(--mono); line-height:1.2;">
+                ${b.width}x${b.length}x${b.height} &middot; ${b.weight}kg
+              </div>
+            </div>
+          `;
+      }).join("");
+    }
+
+    function initItemSKUs() {
+      const list = document.getElementById("sku-list");
+      if (!list) return;
+      list.innerHTML = WATCH_SKUS.map(sku => `
+          <div class="sku-row" style="border-left-color: ${sku.color}">
+            <div class="sku-info">
+              <div class="sku-name">${sku.name}</div>
+              <div class="sku-dim">${sku.width} x ${sku.length} x ${sku.height} cm &middot; ${sku.weight}kg</div>
+              <div class="sku-placed" id="placed-${sku.id}"></div>
+            </div>
+            <div class="sku-stepper">
+              <button class="stepper-btn" onclick="stepQty('${sku.id}', -1)">−</button>
+              <input type="number" class="qty-input" id="qty-${sku.id}" value="0" min="0" onchange="updateQty('${sku.id}', this.value)">
+              <button class="stepper-btn" onclick="stepQty('${sku.id}', 1)">+</button>
+            </div>
+          </div>
+        `).join("");
+    }
+
+    window.stepQty = (id, delta) => {
+      const input = document.getElementById(`qty-${id}`);
+      const newVal = Math.max(0, (parseInt(input.value) || 0) + delta);
+      input.value = newVal;
+      S.itemQtys[id] = newVal;
+    };
+
+    function initAll() {
+      initBoxContainers();
+      initItemSKUs();
+      init3D();
+    }
+
+    window.updateQty = (id, val) => { S.itemQtys[id] = parseInt(val) || 0; };
+
+    // OrbitControls inline (Essential for 3D)
+    (function () {
+      if (typeof THREE === "undefined") return;
+      THREE.OrbitControls = function (object, domElement) {
+        this.object = object;
+        this.domElement = domElement || document;
+        this.target = new THREE.Vector3();
+        this.enabled = true;
+        this.enableDamping = true;
+        this.dampingFactor = 0.05;
+        const scope = this;
+        let state = -1; // 0: rotate, 1: zoom (optional handled by wheel)
+        const rotateStart = new THREE.Vector2();
+        const rotateEnd = new THREE.Vector2();
+        const rotateDelta = new THREE.Vector2();
+
+        const onMouseDown = (e) => {
+          if (!this.enabled) return;
+          state = 0;
+          rotateStart.set(e.clientX, e.clientY);
+        };
+
+        const onMouseMove = (e) => {
+          if (state === 0) {
+            rotateEnd.set(e.clientX, e.clientY);
+            rotateDelta.subVectors(rotateEnd, rotateStart);
+            const angleX = 2 * Math.PI * rotateDelta.x / domElement.clientWidth;
+            const angleY = 2 * Math.PI * rotateDelta.y / domElement.clientHeight;
+            const offset = scope.object.position.clone().sub(scope.target);
+            const spherical = new THREE.Spherical().setFromVector3(offset);
+            spherical.theta -= angleX;
+            spherical.phi -= angleY;
+            spherical.makeSafe();
+            scope.object.position.setFromSpherical(spherical).add(scope.target);
+            scope.object.lookAt(scope.target);
+            rotateStart.copy(rotateEnd);
+          }
+        };
+
+        const onMouseUp = () => state = -1;
+
+        const onWheel = (e) => {
+          if (!this.enabled) return;
+          e.preventDefault();
+          const factor = e.deltaY > 0 ? 1.05 : 0.95;
+          const offset = scope.object.position.clone().sub(scope.target);
+          offset.multiplyScalar(factor);
+          // Limit zoom distance
+          const dist = offset.length();
+          if (dist > 10 && dist < 5000) {
+            scope.object.position.copy(scope.target).add(offset);
+          }
+        };
+
+        domElement.addEventListener('mousedown', onMouseDown);
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+        domElement.addEventListener('wheel', onWheel, { passive: false });
+        this.update = () => { };
+      };
+    })();
+
+    // 3D Engine
+    let scene3D, camera3D, renderer3D, controls3D, palletGroup;
+    function init3D() {
+      const container = document.getElementById("three-container");
+      if (!container) return;
+      scene3D = new THREE.Scene();
+      scene3D.background = new THREE.Color(0xf8fafc);
+
+      camera3D = new THREE.PerspectiveCamera(45, container.offsetWidth / container.offsetHeight, 1, 10000);
+      camera3D.position.set(100, 100, 100);
+
+      renderer3D = new THREE.WebGLRenderer({ antialias: true });
+      renderer3D.setSize(container.offsetWidth, container.offsetHeight);
+      container.appendChild(renderer3D.domElement);
+
+      controls3D = new THREE.OrbitControls(camera3D, renderer3D.domElement);
+
+      // Scene Aids
+      const grid = new THREE.GridHelper(500, 50, 0x000000, 0x000000);
+      grid.material.opacity = 0.05;
+      grid.material.transparent = true;
+      scene3D.add(grid);
+      scene3D.add(new THREE.AxesHelper(50));
+
+      scene3D.add(new THREE.AmbientLight(0xffffff, 0.8));
+      const dl = new THREE.DirectionalLight(0xffffff, 0.4);
+      dl.position.set(100, 200, 150);
+      scene3D.add(dl);
+
+      palletGroup = new THREE.Group();
+      scene3D.add(palletGroup);
+      animate();
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      if (controls3D) controls3D.update();
+      if (renderer3D) renderer3D.render(scene3D, camera3D);
+    }
+
+    // Advanced Multi-Box Packing Logic
+    function packItemsIntoOneContainer(items, box) {
+      const packed = [];
+      const spaces = [{ x: 0, y: 0, z: 0, w: box.width, l: box.length, h: box.height }];
+      const remaining = [];
+
+      items.sort((a, b) => b.volume - a.volume);
+
+      items.forEach(it => {
+        let placed = false;
+        for (let i = 0; i < spaces.length; i++) {
+          const s = spaces[i];
+          if (it.width <= s.w && it.length <= s.l && it.height <= s.h) {
+            packed.push({ ...it, x: s.x, y: s.y, z: s.z });
+            const newSpaces = [
+              { x: s.x + it.width, y: s.y, z: s.z, w: s.w - it.width, l: it.length, h: it.height },
+              { x: s.x, y: s.y + it.length, z: s.z, w: s.w, l: s.l - it.length, h: it.height },
+              { x: s.x, y: s.y, z: s.z + it.height, w: s.w, l: s.l, h: s.h - it.height }
+            ];
+            spaces.splice(i, 1, ...newSpaces.filter(sp => sp.w > 0.1 && sp.l > 0.1 && sp.h > 0.1));
+            placed = true;
+            break;
+          }
+        }
+        if (!placed) remaining.push(it);
+      });
+      return { packed, remaining };
+    }
+
+    function runOptimize() {
+      const items = [];
+      WATCH_SKUS.forEach(sku => {
+        for (let i = 0; i < (S.itemQtys[sku.id] || 0); i++) {
+          items.push({ ...sku, volume: sku.width * sku.length * sku.height });
+        }
+      });
+
+      if (!items.length) return showToast("Enter quantities first.");
+
+      let resultsByBox = S.boxes.map(box => {
+        let remainingItems = [...items];
+        let containersUsed = [];
+        while (remainingItems.length > 0) {
+          const result = packItemsIntoOneContainer(remainingItems, box);
+          if (result.packed.length === 0) break;
+          containersUsed.push(result.packed);
+          remainingItems = result.remaining;
+        }
+        return { box, layouts: containersUsed, fitsAll: remainingItems.length === 0, totalVolume: box.width * box.length * box.height * containersUsed.length };
+      });
+
+      const validResults = resultsByBox.filter(r => r.fitsAll);
+      if (!validResults.length) return showToast("Items are too large for any container.");
+
+      const best = validResults.sort((a, b) => a.totalVolume - b.totalVolume)[0];
+      S.bestBoxId = best.box.id;
+      S.palletsData = best.layouts;
+      S.activePalletIdx = 0;
+
+      // Group identical layouts into tab groups
+      // A "fingerprint" is a canonical signature of the packed items: sorted by sku id and position
+      S.layoutGroups = groupLayouts(best.box.id, best.layouts);
+
+      // Update Sidebar to show counts
+      const usedCounts = { [S.bestBoxId]: S.palletsData.length };
+      initBoxContainers(usedCounts);
+
+      renderTabs();
+      render3D();
+      updateStats();
+      updateSKUPlaced();
+
+      document.getElementById("vis-empty").style.display = "none";
+      showToast(`Optimized: ${best.box.code} (${S.palletsData.length} boxes)`);
+    }
+
+    // Generate a canonical fingerprint for a packed layout
+    function layoutFingerprint(layout) {
+      return layout.map(it => `${it.id}:${it.x.toFixed(2)},${it.y.toFixed(2)},${it.z.toFixed(2)}`)
+        .sort().join("|");
+    }
+
+    // Group layouts with identical fingerprints into tab groups
+    function groupLayouts(boxId, layouts) {
+      const groups = []; // [{boxId, layout, count, fingerprint}]
+      layouts.forEach(layout => {
+        const fp = layoutFingerprint(layout);
+        const existing = groups.find(g => g.boxId === boxId && g.fingerprint === fp);
+        if (existing) {
+          existing.count++;
+        } else {
+          groups.push({ boxId, layout, count: 1, fingerprint: fp });
+        }
+      });
+      return groups;
+    }
+
+    function renderTabs() {
+      const bar = document.getElementById("pallet-tabs-bar");
+      const groups = S.layoutGroups;
+
+      // Only show tabs if there is more than one group
+      bar.style.display = groups.length > 1 ? "flex" : "none";
+      bar.innerHTML = groups.map((g, i) => {
+        const box = S.boxes.find(x => x.id === g.boxId);
+        const label = g.count > 1 ? `${box.code} (${g.count} boxes)` : box.code;
+        return `<button class="pallet-tab ${i === S.activePalletIdx ? 'active' : ''}" onclick="setActiveBox(${i})">${label}</button>`;
+      }).join("");
+    }
+
+    window.setActiveBox = (i) => {
+      S.activePalletIdx = i;
+      renderTabs();
+      render3D();
+      updateStats();
+      updateSKUPlaced();
+    };
+
+    // Update SKU placed counter for the active container group
+    function updateSKUPlaced() {
+      if (!S.layoutGroups || !S.layoutGroups.length) return;
+      const group = S.layoutGroups[S.activePalletIdx];
+      // Count per SKU in this layout
+      const counts = {};
+      group.layout.forEach(it => { counts[it.id] = (counts[it.id] || 0) + 1; });
+      WATCH_SKUS.forEach(sku => {
+        const el = document.getElementById(`placed-${sku.id}`);
+        if (!el) return;
+        const qty = S.itemQtys[sku.id] || 0;
+        const placed = counts[sku.id] || 0;
+        el.textContent = qty > 0 ? `${placed} / ${qty} placed` : '';
+      });
+    }
+
+    function render3D() {
+      if (!palletGroup) return;
+      while (palletGroup.children.length) palletGroup.remove(palletGroup.children[0]);
+
+      const group = S.layoutGroups[S.activePalletIdx];
+      const box = S.boxes.find(x => x.id === group.boxId);
+      const layout = group.layout;
+
+      // Center camera on current box size
+      const centerX = box.width / 2;
+      const centerY = box.height / 2;
+      const centerZ = box.length / 2;
+      camera3D.position.set(box.width * 2, box.height * 2, box.length * 2);
+      controls3D.target.set(centerX, centerY, centerZ);
+
+      // Container wireframe
+      const containerG = new THREE.BoxGeometry(box.width, box.height, box.length);
+      const containerM = new THREE.LineSegments(new THREE.EdgesGeometry(containerG), new THREE.LineBasicMaterial({ color: 0x94a3b8 }));
+      containerM.position.set(centerX, centerY, centerZ);
+      palletGroup.add(containerM);
+
+      // Items
+      layout.forEach(it => {
+        const g = new THREE.BoxGeometry(it.width, it.height, it.length);
+        const mesh = new THREE.Mesh(g, new THREE.MeshPhongMaterial({ color: it.color, shininess: 50 }));
+        mesh.position.set(it.x + it.width / 2, it.z + it.height / 2, it.y + it.length / 2);
+        palletGroup.add(mesh);
+        const edge = new THREE.LineSegments(new THREE.EdgesGeometry(g), new THREE.LineBasicMaterial({ color: 0x000000, opacity: 0.1, transparent: true }));
+        edge.position.copy(mesh.position);
+        palletGroup.add(edge);
+      });
+    }
+
+    function updateStats() {
+      const group = S.layoutGroups[S.activePalletIdx];
+      const box = S.boxes.find(x => x.id === group.boxId);
+      const totalContainers = S.palletsData.length;
+
+      let used = 0;
+      group.layout.forEach(it => used += it.volume);
+      const totalVolume = box.width * box.length * box.height;
+
+      // Container Analytics (Right Panel)
+      document.getElementById("rp-eff").textContent = Math.round((used / totalVolume) * 100);
+      let localWeight = 0;
+      group.layout.forEach(it => localWeight += (it.weight || 0));
+      document.getElementById("rp-weight").textContent = localWeight.toFixed(2);
+
+      // Global Order Analytics (Header)
+      const totalCost = totalContainers * box.price;
+
+      let globalWeight = 0;
+      S.palletsData.forEach(p => {
+        p.forEach(it => globalWeight += (it.weight || 0));
+      });
+      globalWeight += totalContainers * (box.weight || 0);
+
+      const elWeight = document.getElementById("header-total-weight");
+      if (elWeight) elWeight.textContent = globalWeight.toFixed(2) + " kg";
+
+      const elCost = document.getElementById("header-total-cost");
+      if (elCost) elCost.textContent = "$" + totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+      const boxCountSuffix = totalContainers > 1 ? ` (${totalContainers} containers)` : "";
+      document.getElementById("vis-stats").textContent = `Best Container Type: ${box.code}${boxCountSuffix}`;
+    }
+
+    function showToast(m) {
+      const c = document.getElementById("toast-container");
+      const t = document.createElement("div"); t.className = "toast"; t.textContent = m;
+      c.appendChild(t); setTimeout(() => t.remove(), 3000);
+    }
+
+    document.getElementById("btn-optimize").onclick = runOptimize;
+    document.getElementById("btn-reset").onclick = () => location.reload();
+    document.getElementById("btn-settings").onclick = openSettings;
+
+    // Settings Logic
+    let draftSettingBoxes = [];
+    let draftSettingItems = [];
+
+    function openSettings() {
+      draftSettingBoxes = JSON.parse(JSON.stringify(BOX_TEMPLATES));
+      draftSettingItems = JSON.parse(JSON.stringify(WATCH_SKUS));
+      renderSettingGridBoxes();
+      renderSettingGridItems();
+      document.getElementById('settings-modal').classList.add('open');
+    }
+
+    function closeSettings() {
+      document.getElementById('settings-modal').classList.remove('open');
+    }
+
+    function switchSettingsTab(tab) {
+      document.querySelectorAll('.modal-tab').forEach(el => el.classList.remove('active'));
+      document.getElementById(`tab-${tab}`).classList.add('active');
+      document.getElementById('settings-body-boxes').style.display = tab === 'boxes' ? 'block' : 'none';
+      document.getElementById('settings-body-items').style.display = tab === 'items' ? 'block' : 'none';
+    }
+
+    function renderSettingGridBoxes() {
+      const container = document.getElementById('tb-boxes');
+      let html = `
+        <div class="settings-grid-header">Code / Name</div>
+        <div class="settings-grid-header">Width (cm)</div>
+        <div class="settings-grid-header">Length (cm)</div>
+        <div class="settings-grid-header">Height (cm)</div>
+        <div class="settings-grid-header">Weight (kg)</div>
+        <div class="settings-grid-header">Cost ($)</div>
+        <div class="settings-grid-header"></div>
+      `;
+      draftSettingBoxes.forEach((b, i) => {
+        html += `
+          <input class="sg-input" value="${b.code}" onchange="updateDraftBox(${i}, 'code', this.value)">
+          <input type="number" step="0.1" class="sg-input" value="${b.width}" onchange="updateDraftBox(${i}, 'width', parseFloat(this.value))">
+          <input type="number" step="0.1" class="sg-input" value="${b.length}" onchange="updateDraftBox(${i}, 'length', parseFloat(this.value))">
+          <input type="number" step="0.1" class="sg-input" value="${b.height}" onchange="updateDraftBox(${i}, 'height', parseFloat(this.value))">
+          <input type="number" step="0.1" class="sg-input" value="${b.weight}" onchange="updateDraftBox(${i}, 'weight', parseFloat(this.value))">
+          <input type="number" step="0.1" class="sg-input" value="${b.price}" onchange="updateDraftBox(${i}, 'price', parseFloat(this.value))">
+          <button class="btn-remove-row" onclick="removeSettingBox(${i})">&times;</button>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    window.updateDraftBox = (idx, field, val) => { draftSettingBoxes[idx][field] = val || 0; };
+    window.removeSettingBox = (idx) => { draftSettingBoxes.splice(idx, 1); renderSettingGridBoxes(); };
+    window.addSettingBox = () => { draftSettingBoxes.push({ id: "NEW_" + Date.now(), name: "Custom Box", code: "NEWBOX", width: 10, length: 10, height: 10, weight: 0.5, price: 5, active: true }); renderSettingGridBoxes(); };
+
+    function renderSettingGridItems() {
+      const container = document.getElementById('tb-items');
+      let html = `
+        <div class="settings-grid-header">SKU Name</div>
+        <div class="settings-grid-header">Width (cm)</div>
+        <div class="settings-grid-header">Length (cm)</div>
+        <div class="settings-grid-header">Height (cm)</div>
+        <div class="settings-grid-header">Weight (kg)</div>
+        <div class="settings-grid-header">Color</div>
+        <div class="settings-grid-header"></div>
+      `;
+      draftSettingItems.forEach((it, i) => {
+        html += `
+          <input class="sg-input" value="${it.name}" onchange="updateDraftItem(${i}, 'name', this.value)">
+          <input type="number" step="0.1" class="sg-input" value="${it.width}" onchange="updateDraftItem(${i}, 'width', parseFloat(this.value))">
+          <input type="number" step="0.1" class="sg-input" value="${it.length}" onchange="updateDraftItem(${i}, 'length', parseFloat(this.value))">
+          <input type="number" step="0.1" class="sg-input" value="${it.height}" onchange="updateDraftItem(${i}, 'height', parseFloat(this.value))">
+          <input type="number" step="0.1" class="sg-input" value="${it.weight}" onchange="updateDraftItem(${i}, 'weight', parseFloat(this.value))">
+          <input type="color" class="sg-input" value="${it.color || '#3B82F6'}" onchange="updateDraftItem(${i}, 'color', this.value)" style="padding: 2px;">
+          <button class="btn-remove-row" onclick="removeSettingItem(${i})">&times;</button>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    window.updateDraftItem = (idx, field, val) => { draftSettingItems[idx][field] = val || 0; };
+    window.removeSettingItem = (idx) => { draftSettingItems.splice(idx, 1); renderSettingGridItems(); };
+    window.addSettingItem = () => { draftSettingItems.push({ id: "ITM_" + Date.now(), name: "New Item", width: 10, length: 10, height: 10, weight: 0.5, color: "#3B82F6" }); renderSettingGridItems(); };
+
+    window.saveSettings = () => {
+      BOX_TEMPLATES = JSON.parse(JSON.stringify(draftSettingBoxes));
+      WATCH_SKUS = JSON.parse(JSON.stringify(draftSettingItems));
+
+      localStorage.setItem('timex_boxes', JSON.stringify(BOX_TEMPLATES));
+      localStorage.setItem('timex_skus', JSON.stringify(WATCH_SKUS));
+
+      location.reload();
+    };
+
+    // Start the App
+    initAll();
+
+    window.addEventListener('resize', () => {
+      const container = document.getElementById("three-container");
+      if (renderer3D && camera3D && container) {
+        camera3D.aspect = container.offsetWidth / container.offsetHeight;
+        camera3D.updateProjectionMatrix();
+        renderer3D.setSize(container.offsetWidth, container.offsetHeight);
+      }
+    });
+  </script>
+</body>
+
+</html>

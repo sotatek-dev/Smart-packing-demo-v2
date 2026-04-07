@@ -675,12 +675,35 @@
         color: var(--text-primary);
       }
 
+      .btn-primary {
+        background: var(--primary);
+        color: #fff;
+      }
+
+      .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+      }
+
+      .btn-outline {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text-secondary);
+      }
+
+      .btn-outline:hover {
+        background: var(--bg-main);
+        color: var(--text-primary);
+      }
+
       /* ── LAYOUT ── */
       .app {
         flex: 1;
         display: grid;
-        grid-template-columns: 380px 1fr;
+        grid-template-columns: 340px 1fr;
         overflow: hidden;
+        min-height: 0;
       }
 
       /* ── LEFT PANEL ── */
@@ -690,6 +713,29 @@
         display: flex;
         flex-direction: column;
         overflow: hidden;
+      }
+
+      .sidebar-scroll {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px 22px;
+      }
+
+      .sidebar-scroll::-webkit-scrollbar {
+        width: 4px;
+      }
+      .sidebar-scroll::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 2px;
+      }
+
+      .footer-actions {
+        padding: 16px 22px;
+        background: var(--bg-panel);
+        border-top: 1px solid var(--border);
+        display: flex;
+        gap: 10px;
+        flex-shrink: 0;
       }
 
       .panel-hd {
@@ -767,20 +813,8 @@
         padding: 13px 15px;
         border: 2px solid var(--border);
         border-radius: 10px;
-        cursor: pointer;
         transition: 0.15s;
         background: var(--bg-panel);
-      }
-
-      .deck-opt:hover {
-        border-color: var(--primary);
-        background: #f0f7ff;
-      }
-
-      .deck-opt.sel {
-        border-color: var(--primary);
-        background: #f0f7ff;
-        box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.08);
       }
 
       .deck-opt-hd {
@@ -830,10 +864,10 @@
         opacity: 0.6;
       }
 
-      /* Box rows */
-      .box-row {
+      /* SKU rows */
+      .sku-row {
         display: grid;
-        grid-template-columns: 18px 10px 1fr 90px;
+        grid-template-columns: 10px 1fr 90px;
         gap: 10px;
         align-items: center;
         padding: 11px 13px;
@@ -844,31 +878,24 @@
         transition: 0.15s;
       }
 
-      .box-row:hover {
+      .sku-row:hover {
         border-color: var(--primary);
         box-shadow: var(--shadow-sm);
       }
 
-      .box-row.active {
+      .sku-row.active {
         border-color: rgba(0, 102, 255, 0.35);
         background: #f8fbff;
       }
 
-      .box-chk {
-        width: 16px;
-        height: 16px;
-        cursor: pointer;
-        accent-color: var(--primary);
-      }
-
-      .box-dot {
+      .sku-dot {
         width: 10px;
         height: 10px;
         border-radius: 3px;
         flex-shrink: 0;
       }
 
-      .box-status {
+      .sku-status {
         font-size: 10px;
         margin-top: 3px;
         font-weight: 600;
@@ -882,18 +909,18 @@
         color: #10b981;
       }
 
-      .box-row.short {
+      .sku-row.short {
         border-left: 3px solid #ef4444;
         background: #fffafa;
       }
 
-      .box-info .box-name {
+      .sku-info .sku-name {
         font-size: 12px;
         font-weight: 600;
         color: var(--text-primary);
       }
 
-      .box-info .box-dim {
+      .sku-info .sku-dim {
         font-size: 10px;
         font-family: var(--mono);
         color: var(--text-muted);
@@ -1038,7 +1065,7 @@
       }
 
       /* ── PALLET INFO LIST ── */
-      .pallet-info-card {
+      .box-info-card {
         display: flex;
         align-items: center;
         gap: 10px;
@@ -1048,7 +1075,7 @@
         border-radius: 8px;
         margin-bottom: 6px;
       }
-      .pallet-info-card .pic-icon {
+      .box-info-card .pic-icon {
         width: 28px;
         height: 28px;
         border-radius: 6px;
@@ -1058,11 +1085,11 @@
         justify-content: center;
         flex-shrink: 0;
       }
-      .pallet-info-card .pic-body {
+      .box-info-card .pic-body {
         flex: 1;
         min-width: 0;
       }
-      .pallet-info-card .pic-name {
+      .box-info-card .pic-name {
         font-size: 12px;
         font-weight: 600;
         color: var(--text-primary);
@@ -1070,13 +1097,13 @@
         overflow: hidden;
         text-overflow: ellipsis;
       }
-      .pallet-info-card .pic-dims {
+      .box-info-card .pic-dims {
         font-size: 10px;
         font-family: var(--mono);
         color: var(--text-muted);
         margin-top: 1px;
       }
-      .pallet-info-card .pic-badge {
+      .box-info-card .pic-badge {
         font-size: 9px;
         font-weight: 600;
         padding: 2px 7px;
@@ -1085,10 +1112,10 @@
         color: var(--primary);
         flex-shrink: 0;
       }
-      .pallet-info-card.inactive {
+      .box-info-card.inactive {
         opacity: 0.45;
       }
-      .pallet-tab {
+      .box-tab {
         display: flex;
         align-items: center;
         gap: 6px;
@@ -1104,18 +1131,18 @@
         font-family: var(--sans);
         white-space: nowrap;
       }
-      .pallet-tab:hover {
+      .box-tab:hover {
         border-color: var(--primary);
         color: var(--primary);
         background: rgba(0, 102, 255, 0.05);
       }
-      .pallet-tab.active {
+      .box-tab.active {
         border-color: var(--primary);
         background: rgba(0, 102, 255, 0.1);
         color: var(--primary);
         font-weight: 600;
       }
-      .pallet-tab .pt-num {
+      .box-tab .pt-num {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -1127,17 +1154,17 @@
         font-size: 10px;
         font-weight: 700;
       }
-      .pallet-tab.active .pt-num {
+      .box-tab.active .pt-num {
         background: var(--primary-dark);
       }
-      .pallet-tab .pt-boxes {
+      .box-tab .pt-skus {
         padding: 1px 6px;
         border-radius: 4px;
         background: rgba(0, 0, 0, 0.06);
         font-size: 10px;
         font-family: var(--mono);
       }
-      .pallet-tab .pt-type {
+      .box-tab .pt-type {
         padding: 1px 6px;
         border-radius: 4px;
         background: rgba(0, 102, 255, 0.1);
@@ -1422,96 +1449,6 @@
         margin-top: 2px;
       }
 
-      /* Box forecast */
-      .fcst-intro {
-        font-size: 11px;
-        color: var(--text-muted);
-        margin-bottom: 10px;
-        line-height: 1.5;
-      }
-
-      .fcst-list {
-        display: flex;
-        flex-direction: column;
-        gap: 7px;
-      }
-
-      .fcst-row {
-        background: var(--bg-main);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 10px 12px;
-      }
-
-      .fcst-row-hd {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 7px;
-      }
-
-      .fcst-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 2px;
-        flex-shrink: 0;
-      }
-
-      .fcst-name {
-        font-size: 11px;
-        font-weight: 600;
-        color: var(--text-primary);
-        flex: 1;
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
-      .fcst-metrics {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 6px;
-      }
-
-      .fcst-m-label {
-        font-size: 9px;
-        color: var(--text-muted);
-        font-family: var(--mono);
-      }
-
-      .fcst-m-val {
-        font-size: 14px;
-        font-family: var(--mono);
-        font-weight: 700;
-      }
-
-      .fcst-m-val.green {
-        color: #16a34a;
-      }
-
-      .fcst-m-val.orange {
-        color: var(--warning);
-      }
-
-      .fcst-m-val.red {
-        color: var(--danger);
-      }
-
-      .fcst-bar {
-        height: 3px;
-        background: var(--border);
-        border-radius: 2px;
-        margin-top: 6px;
-        overflow: hidden;
-      }
-
-      .fcst-bar-fill {
-        height: 100%;
-        border-radius: 2px;
-        transition: width 0.3s;
-      }
-
       .fcst-empty {
         font-size: 11px;
         color: var(--text-muted);
@@ -1519,7 +1456,7 @@
         padding: 16px;
       }
 
-      /* Pallet specs */
+      /* Box specs */
       .dim-row {
         display: flex;
         justify-content: space-between;
@@ -2029,10 +1966,23 @@
     <!-- HEADER -->
     <header class="hdr">
       <div class="hdr-logo">
-        <div class="logo-mark">PO</div>
-        Packing Optimization
+        <div class="logo-mark">
+          <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
+            <path
+              d="M8 10h12M8 14h8M8 18h10"
+              stroke="#fff"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+          </svg>
+        </div>
+        Packing Optimizer
       </div>
       <div class="hdr-right">
+        <div class="mode-chip" id="mode-chip">AUTO MODE</div>
+        <button class="btn btn-ghost" id="btn-manual-toggle">
+          Switch to Manual
+        </button>
         <button
           class="btn btn-ghost"
           id="btn-settings"
@@ -2053,10 +2003,6 @@
           </svg>
           Settings
         </button>
-        <div class="mode-chip" id="mode-chip">AUTO MODE</div>
-        <button class="btn btn-ghost" id="btn-manual-toggle">
-          Switch to Manual
-        </button>
       </div>
     </header>
 
@@ -2064,70 +2010,64 @@
     <div class="app">
       <!-- LEFT: Config -->
       <div class="left">
-        <div class="panel-hd">
-          <h3>Configuration</h3>
-          <p>Configure your pallet layout parameters</p>
-        </div>
-        <div class="scroll">
+        <div class="sidebar-scroll">
           <div class="sec">
-            <div class="sec-title"><span>Select Pallet Template</span></div>
-            <div class="deck-opts" id="pallet-opts"></div>
+            <div class="sec-title"><span>Available Boxes</span></div>
+            <div class="deck-opts" id="box-opts"></div>
           </div>
-
-          <div class="sec">
-            <div class="sec-title"><span>Select Deck Position</span></div>
-            <div class="deck-opts" id="position-opts">
-              <!-- Dynamic Positions -->
-            </div>
-          </div>
-
           <div class="sec">
             <div class="sec-title">
-              <span>Select Box Types & Quantities</span>
+              <span>Select SKU Types & Quantities</span>
             </div>
-            <div id="box-list"></div>
+            <div id="sku-list"></div>
           </div>
         </div>
-
-        <div class="left-footer">
-          <div class="left-btns">
-            <button class="btn-sm btn-reset" id="btn-reset">Reset</button>
-            <button class="btn-sm btn-optimize" id="btn-optimize">
-              Optimize Layout
-            </button>
-          </div>
+        <div class="footer-actions">
+          <button
+            class="btn btn-outline btn-reset"
+            id="btn-reset"
+            style="flex: 1"
+          >
+            Reset
+          </button>
+          <button
+            class="btn btn-primary btn-optimize"
+            id="btn-optimize"
+            style="flex: 2"
+          >
+            Optimize Layout
+          </button>
         </div>
       </div>
 
       <!-- CENTER: Visualization -->
       <div class="center">
         <div class="center-hd">
-          <div>
-            <div class="center-title" id="vis-title">3D Pallet Preview</div>
-            <div class="center-sub" id="center-subtitle">
-              Interactive visualization of optimized layout
-            </div>
+          <div
+            style="font-weight: 600; font-size: 14px; color: #475569"
+            id="vis-title"
+          >
+            3D Layout Preview
           </div>
-          <div style="display: flex; gap: 10px; align-items: center">
-            <div class="summary-bar-dark">
-              <div class="sb-metrics">
-                <div class="sb-metric">
-                  <div class="sb-val" id="sum-boxes">0</div>
-                  <div class="sb-label">Total Boxes</div>
-                </div>
-                <div class="sb-metric">
-                  <div class="sb-val" id="sum-pallets">—</div>
-                  <div class="sb-label">Total Pallets</div>
-                </div>
-                <div class="sb-metric">
-                  <div class="sb-val" id="sum-types">0</div>
-                  <div class="sb-label">Box Types</div>
-                </div>
-                <div class="sb-metric">
-                  <div class="sb-val" id="sum-eff">—</div>
-                  <div class="sb-label">Total Weight (kg)</div>
-                </div>
-              </div>
+          <div
+            style="
+              display: flex;
+              gap: 24px;
+              align-items: center;
+              margin-left: auto;
+            "
+          >
+            <div class="metric-card">
+              <div class="metric-value" id="sum-skus">—</div>
+              <div class="metric-label">TOTAL SKUS</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value" id="sum-boxes">—</div>
+              <div class="metric-label">TOTAL BOXES</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value" id="sum-eff">—</div>
+              <div class="metric-label">TOTAL WEIGHT (KG)</div>
             </div>
           </div>
         </div>
@@ -2157,7 +2097,7 @@
             <line x1="12" y1="8" x2="12" y2="12" />
             <line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
-          <strong>Manual Mode active:</strong>&nbsp;Drag boxes to reposition ·
+          <strong>Manual Mode active:</strong>&nbsp;Drag SKUs to reposition ·
           Press
           <kbd
             style="
@@ -2168,7 +2108,7 @@
             "
             >Q</kbd
           >
-          while holding a box to rotate through 6 orientations.
+          while holding a SKU to rotate through 6 orientations.
           <div style="margin-left: auto; display: flex; gap: 8px">
             <button
               id="btn-revert-drag"
@@ -2227,9 +2167,9 @@
           </div>
         </div>
 
-        <!-- Multi-pallet tab bar -->
+        <!-- Multi-box tab bar -->
         <div
-          id="pallet-tabs-bar"
+          id="box-tabs-bar"
           style="
             display: none;
             align-items: center;
@@ -2272,129 +2212,60 @@
               gap: 14px;
             "
           >
-            <svg width="100" height="100" viewBox="0 0 200 200" fill="none">
+            <svg
+              width="64"
+              height="64"
+              viewBox="0 0 100 100"
+              fill="none"
+              style="opacity: 0.25; margin-bottom: 16px"
+            >
               <rect
-                x="40"
-                y="80"
-                width="120"
-                height="80"
-                rx="4"
+                x="30"
+                y="20"
+                width="15"
+                height="12"
+                rx="2"
+                fill="#CBD5E1"
+              />
+              <rect
+                x="48"
+                y="20"
+                width="15"
+                height="12"
+                rx="2"
+                fill="#CBD5E1"
+              />
+              <rect
+                x="30"
+                y="35"
+                width="15"
+                height="12"
+                rx="2"
                 fill="#E2E8F0"
               />
               <rect
-                x="50"
+                x="48"
+                y="35"
+                width="15"
+                height="12"
+                rx="2"
+                fill="#E2E8F0"
+              />
+              <rect
+                x="30"
                 y="50"
-                width="40"
-                height="30"
+                width="33"
+                height="12"
                 rx="2"
                 fill="#94A3B8"
-              />
-              <rect
-                x="95"
-                y="50"
-                width="40"
-                height="30"
-                rx="2"
-                fill="#94A3B8"
-              />
-              <rect
-                x="50"
-                y="90"
-                width="40"
-                height="30"
-                rx="2"
-                fill="#64748B"
-              />
-              <rect
-                x="95"
-                y="90"
-                width="40"
-                height="30"
-                rx="2"
-                fill="#64748B"
-              />
-              <rect
-                x="50"
-                y="130"
-                width="40"
-                height="20"
-                rx="2"
-                fill="#475569"
-              />
-              <line
-                x1="100"
-                y1="40"
-                x2="100"
-                y2="15"
-                stroke="#CBD5E1"
-                stroke-width="2"
-              />
-              <line
-                x1="90"
-                y1="20"
-                x2="100"
-                y2="15"
-                stroke="#CBD5E1"
-                stroke-width="2"
-              />
-              <line
-                x1="110"
-                y1="20"
-                x2="100"
-                y2="15"
-                stroke="#CBD5E1"
-                stroke-width="2"
               />
             </svg>
             <div class="empty-title">No optimization result yet</div>
-            <div
-              class="empty-sub"
-              style="
-                text-align: center;
-                max-width: 240px;
-                color: var(--text-muted);
-                font-size: 12px;
-                line-height: 1.6;
-              "
-            >
-              Select deck position and box types, then click
+            <div class="empty-sub">
+              Select a box and SKU types, then click
               <strong style="color: var(--primary)">Optimize Layout</strong> to
               generate the preview
             </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- RIGHT: Analytics -->
-      <div class="right" id="right-panel" style="display: none">
-        <div class="right-hd">
-          <h3>Pallet Analytics</h3>
-        </div>
-        <div class="right-scroll">
-          <div class="r-sec">
-            <div class="r-sec-title">Weight Capacity</div>
-            <div class="gauge-hd">
-              <span class="gauge-label">Current Load</span>
-              <span class="gauge-vals"
-                ><span class="gauge-cur" id="g-cur">0</span
-                ><span class="gauge-max" id="g-max"> / 4,000 kg</span></span
-              >
-            </div>
-            <div class="gauge-track">
-              <div class="gauge-fill" id="g-fill" style="width: 0%"></div>
-            </div>
-            <div class="gauge-pct" id="g-pct">0% used</div>
-          </div>
-
-          <div class="r-sec">
-            <div id="pallet-eff-list">
-              <div class="fcst-empty">Run optimization to see efficiency</div>
-            </div>
-          </div>
-
-          <div class="r-sec">
-            <div class="r-sec-title">Additional Box Forecast</div>
-            <div class="fcst-list" id="fcst-list"></div>
           </div>
         </div>
       </div>
@@ -2406,7 +2277,6 @@
       <div class="tt-row">Size: <span id="tt-size"></span></div>
       <div class="tt-row">Weight: <span id="tt-wt"></span></div>
       <div class="tt-row">Layer: <span id="tt-layer"></span></div>
-      <div class="tt-row">Position: <span id="tt-pos"></span></div>
     </div>
     <div class="toast-container" id="toast-container"></div>
 
@@ -2432,7 +2302,7 @@
       let _raycaster3D = null;
       let _mouse3D = null;
       let _intersect3D = null;
-      let _draggableBoxes = [];
+      let _draggableSkus = [];
       let _lastDragSnapshot = null; // kept for compat
       let _dragHistory = []; // full undo stack: each entry = { itemId, x, y, z, layer }
       let _originalLayout = null; // deep copy of layout right after optimize
@@ -2538,7 +2408,7 @@
           );
           renderer3D.domElement.addEventListener("pointerup", on3DPointerUp);
 
-          // ── Q key: rotate held box through 6 orientations ──
+          // ── Q key: rotate held SKU through 6 orientations ──
           window.addEventListener("keydown", on3DKeyDown);
 
           animate3D();
@@ -2577,19 +2447,19 @@
         if (!window.S || !window.S.isManual) return;
         getPointer3D(e);
         _raycaster3D.setFromCamera(_mouse3D, camera3D);
-        const meshes = _draggableBoxes.map((d) => d.mesh);
+        const meshes = _draggableSkus.map((d) => d.mesh);
         const hits = _raycaster3D.intersectObjects(meshes, false);
         if (!hits.length) return;
 
         const hit = hits[0];
-        const found = _draggableBoxes.find((d) => d.mesh === hit.object);
+        const found = _draggableSkus.find((d) => d.mesh === hit.object);
         if (!found) return;
 
         const item = found.item;
         const S = window.S;
 
-        // Block dragging if another box is sitting on top of this one
-        const hasBoxOnTop = S.layout.some((other) => {
+        // Block dragging if another SKU is sitting on top of this one
+        const hasSkuOnTop = S.layout.some((other) => {
           if (other.id === item.id) return false;
           if (Math.abs(other.z - (item.z + item.h)) > 0.5) return false;
           // Check XY footprint overlap
@@ -2600,7 +2470,7 @@
             item.y + item.d <= other.y
           );
         });
-        if (hasBoxOnTop) return; // can't drag — something is on top
+        if (hasSkuOnTop) return; // can't drag — something is on top
 
         e.stopPropagation();
         drag3D.active = true;
@@ -2615,7 +2485,7 @@
         const planeY = hit.point.y;
         drag3D.plane.position.y = planeY;
 
-        // Compute XZ offset at the hit plane so box doesn't jump on first move
+        // Compute XZ offset at the hit plane so SKU doesn't jump on first move
         _raycaster3D.ray.intersectPlane(
           new THREE.Plane(new THREE.Vector3(0, 1, 0), -planeY),
           _intersect3D,
@@ -2638,20 +2508,20 @@
           if (!window.S || !window.S.isManual) return;
           getPointer3D(e);
           _raycaster3D.setFromCamera(_mouse3D, camera3D);
-          const meshes = _draggableBoxes.map((d) => d.mesh);
+          const meshes = _draggableSkus.map((d) => d.mesh);
           const hits = _raycaster3D.intersectObjects(meshes, false);
           if (!hits.length) {
             renderer3D.domElement.style.cursor = "default";
             return;
           }
-          const found = _draggableBoxes.find((d) => d.mesh === hits[0].object);
+          const found = _draggableSkus.find((d) => d.mesh === hits[0].object);
           if (!found) {
             renderer3D.domElement.style.cursor = "default";
             return;
           }
           const item = found.item;
           const S = window.S;
-          const hasBoxOnTop = S.layout.some((other) => {
+          const hasSkuOnTop = S.layout.some((other) => {
             if (other.id === item.id) return false;
             if (Math.abs(other.z - (item.z + item.h)) > 0.5) return false;
             return !(
@@ -2661,7 +2531,7 @@
               item.y + item.d <= other.y
             );
           });
-          renderer3D.domElement.style.cursor = hasBoxOnTop
+          renderer3D.domElement.style.cursor = hasSkuOnTop
             ? "not-allowed"
             : "grab";
           return;
@@ -2676,14 +2546,14 @@
         if (!_raycaster3D.ray.intersectPlane(plane, _intersect3D)) return;
 
         const S = window.S;
-        const p = window.settingsData.pallets.find((i) => i.id === S.palletId);
+        const p = window.settingsData.boxes.find((i) => i.id === S.boxId);
         if (!p) return;
 
         const item = drag3D.item;
         const hw = p.width / 2;
         const hl = p.length / 2;
 
-        // Raw world XZ clamped to pallet
+        // Raw world XZ clamped to box
         let nx = _intersect3D.x - drag3D.offset.x;
         let nz = _intersect3D.z - drag3D.offset.z;
         nx = Math.max(-hw + item.w / 2, Math.min(hw - item.w / 2, nx));
@@ -2722,15 +2592,15 @@
         dropY,
         item,
         excludeId,
-        palletW,
-        palletL,
+        boxW,
+        boxL,
       ) {
         const S = window.S;
 
         function clamp(cx, cy) {
           return {
-            x: Math.round(Math.max(0, Math.min(cx, palletW - item.w))),
-            y: Math.round(Math.max(0, Math.min(cy, palletL - item.d))),
+            x: Math.round(Math.max(0, Math.min(cx, boxW - item.w))),
+            y: Math.round(Math.max(0, Math.min(cy, boxL - item.d))),
           };
         }
 
@@ -2747,9 +2617,9 @@
           });
         }
 
-        // Anchor X and Y values — pallet walls + neighbour edges only (NOT the raw drop)
-        const xAnchors = [0, palletW - item.w];
-        const yAnchors = [0, palletL - item.d];
+        // Anchor X and Y values — box walls + neighbour edges only (NOT the raw drop)
+        const xAnchors = [0, boxW - item.w];
+        const yAnchors = [0, boxL - item.d];
 
         S.layout.forEach((other) => {
           if (other.id === excludeId) return;
@@ -2806,9 +2676,9 @@
         drag3D.active = false;
 
         const S = window.S;
-        const p = window.settingsData.pallets.find((i) => i.id === S.palletId);
+        const p = window.settingsData.boxes.find((i) => i.id === S.boxId);
         if (!p) {
-          restoreDragBox();
+          restoreDragSku();
           return;
         }
 
@@ -2887,7 +2757,7 @@
         render3DLayout(true);
       }
 
-      function restoreDragBox() {
+      function restoreDragSku() {
         if (drag3D.mesh && drag3D.originalPos) {
           drag3D.mesh.position.copy(drag3D.originalPos);
           if (drag3D.edgeMesh)
@@ -2922,7 +2792,7 @@
         e.preventDefault();
 
         const item = drag3D.item;
-        const p = settingsData.pallets.find((i) => i.id === S.palletId);
+        const p = settingsData.boxes.find((i) => i.id === S.boxId);
         if (!p) return;
 
         drag3D.rotationState = (drag3D.rotationState + 1) % 6;
@@ -3005,9 +2875,9 @@
         const sd = window.settingsData;
         if (!S || !sd) return;
 
-        const pos = sd.positions.find((i) => i.id === S.positionId) || null;
-        // Fallback pallet for camera framing (first active pallet)
-        const _fallbackP = sd.pallets.find((i) => i.active) || sd.pallets[0];
+        const pos = null; // height comes from box template
+        // Fallback box for camera framing
+        const _fallbackP = sd.boxes.find((i) => i.active) || sd.boxes[0];
         if (!_fallbackP) return;
 
         // Get container dimensions
@@ -3028,28 +2898,28 @@
         while (palletGroup.children.length > 0) {
           palletGroup.remove(palletGroup.children[0]);
         }
-        _draggableBoxes = [];
+        _draggableSkus = [];
 
-        // Determine which pallets to render
-        const viewAll = S.activePalletIdx === -1;
-        const palletsToRender = viewAll
-          ? S.palletsData
-          : [S.palletsData[S.activePalletIdx]];
-        if (!palletsToRender || !palletsToRender.length || !palletsToRender[0])
+        // Determine which boxes to render
+        const viewAll = S.activeBoxIdx === -1;
+        const boxesToRender = viewAll
+          ? S.boxesData
+          : [S.boxesData[S.activeBoxIdx]];
+        if (!boxesToRender || !boxesToRender.length || !boxesToRender[0])
           return;
 
-        // Lay out pallets side-by-side, each using its own template dimensions
+        // Lay out boxes side-by-side, each using its own template dimensions
         let curOffsetX = 0;
         let totalRenderWidth = 0;
-        palletsToRender.forEach((pd) => {
+        boxesToRender.forEach((pd) => {
           if (!pd) return;
-          const _p = sd.pallets.find((i) => i.id === pd.palletId) || _fallbackP;
+          const _p = sd.boxes.find((i) => i.id === pd.boxId) || _fallbackP;
           totalRenderWidth += _p.width + _p.width * 0.3;
         });
 
-        palletsToRender.forEach((pd, renderIdx) => {
+        boxesToRender.forEach((pd, renderIdx) => {
           if (!pd) return;
-          const p = sd.pallets.find((i) => i.id === pd.palletId) || _fallbackP;
+          const p = sd.boxes.find((i) => i.id === pd.boxId) || _fallbackP;
           const GAP = p.width * 0.3;
 
           const palletGrp = new THREE.Group();
@@ -3057,16 +2927,21 @@
           palletGroup.add(palletGrp);
           curOffsetX += p.width + GAP;
 
-          // Pallet base
+          // Box base
           const palletBase = new THREE.Mesh(
-            new THREE.BoxGeometry(p.width, 10, p.length),
+            new THREE.BoxGeometry(p.width, 4, p.length),
             new THREE.MeshLambertMaterial({ color: 0xb0b8c8 }),
           );
-          palletBase.position.y = -5;
+          palletBase.position.y = -2;
+          palletBase.position.x = p.width / 2;
+          palletBase.position.z = p.length / 2;
           palletGrp.add(palletBase);
 
           // Bounds wireframe
-          const refH = pos ? pos.height : pd.actualHeight || 0;
+          const refH =
+            pd.actualHeight ||
+            settingsData.boxes.find((pl) => pl.id === pd.boxId)?.height ||
+            0;
           if (refH > 0) {
             const boundsGeom = new THREE.BoxGeometry(p.width, refH, p.length);
             const edges = new THREE.EdgesGeometry(boundsGeom);
@@ -3075,15 +2950,17 @@
               new THREE.LineBasicMaterial({
                 color: 0x888888,
                 transparent: true,
-                opacity: pos ? 0.5 : 0.2,
+                opacity: 0.2,
               }),
             );
+            line.position.x = p.width / 2;
             line.position.y = refH / 2;
+            line.position.z = p.length / 2;
             palletGrp.add(line);
           }
 
-          // Pallet label (visible in View All mode or always when multiple)
-          if (palletsToRender.length > 1) {
+          // Box label (visible in View All mode or always when multiple)
+          if (boxesToRender.length > 1) {
             const canvas = document.createElement("canvas");
             canvas.width = 256;
             canvas.height = 72;
@@ -3093,12 +2970,12 @@
             ctx.fillStyle = "#ffffff";
             ctx.font = "bold 24px sans-serif";
             ctx.textAlign = "center";
-            ctx.fillText(`Pallet ${renderIdx + 1}`, 128, 26);
+            ctx.fillText(`Box ${renderIdx + 1}`, 128, 26);
             ctx.font = "16px sans-serif";
             ctx.fillStyle = "#aaaacc";
             ctx.fillText(p.name, 128, 46);
             ctx.fillText(
-              `${pd.layout.length} boxes · ${pd.totalWeight.toFixed(1)} kg`,
+              `${pd.layout.length} SKUs · ${pd.totalWeight.toFixed(1)} kg`,
               128,
               64,
             );
@@ -3116,26 +2993,27 @@
             palletGrp.add(labelMesh);
           }
 
-          // Boxes — only draggable when viewing a single pallet in manual mode
+          // SKUs — only draggable when viewing a single box in manual mode
           const isDraggable = !viewAll && S.isManual;
           pd.layout.forEach((item) => {
-            const bw = Math.max(0.5, item.w - 0.4);
-            const bh = Math.max(0.5, item.h - 0.4);
-            const bd = Math.max(0.5, item.d - 0.4);
+            const bw = item.w;
+            const bh = item.h;
+            const bd = item.d;
 
             const boxGeom = new THREE.BoxGeometry(bw, bh, bd);
             const boxMat = new THREE.MeshLambertMaterial({
               color: item.color || "#3B82F6",
             });
+
             const boxMesh = new THREE.Mesh(boxGeom, boxMat);
 
-            boxMesh.position.x = item.x + item.w / 2 - p.width / 2;
+            boxMesh.position.x = item.x + item.w / 2;
             boxMesh.position.y = item.z + item.h / 2;
-            boxMesh.position.z = item.y + item.d / 2 - p.length / 2;
-            boxMesh.userData.itemId = item.id;
+            boxMesh.position.z = item.y + item.d / 2;
+
             palletGrp.add(boxMesh);
 
-            const bEdges = new THREE.EdgesGeometry(boxGeom);
+            const bEdges = new THREE.EdgesGeometry(boxMesh.geometry);
             const bLine = new THREE.LineSegments(
               bEdges,
               new THREE.LineBasicMaterial({
@@ -3144,18 +3022,19 @@
                 opacity: 0.25,
               }),
             );
-            bLine.position.copy(boxMesh.position);
-            palletGrp.add(bLine);
+
+            boxMesh.add(bLine);
 
             if (isDraggable) {
-              _draggableBoxes.push({ mesh: boxMesh, edgeMesh: bLine, item });
+              _draggableSkus.push({ mesh: boxMesh, edgeMesh: bLine, item });
             }
           });
         });
 
         // Auto-position camera
         if (!keepCamera) {
-          const refH = pos ? pos.height : S.actualHeight || _fallbackP.length;
+          const refH =
+            S.actualHeight || _fallbackP?.height || _fallbackP?.length || 160;
           const centerX = totalRenderWidth / 2 - _fallbackP.width / 2;
           const dist =
             Math.max(totalRenderWidth, _fallbackP.length, refH) * 1.5;
@@ -3174,61 +3053,41 @@
     <script>
       // ─── LOCAL DATA STORE (replaces Supabase) ───
       const DEFAULT_DATA = {
-        pallets: [
+        boxes: [
           {
             id: "p1",
-            name: "Standard EUR Pallet",
+            name: "Standard EUR Box",
             type: "EUR",
             width: 80,
             length: 120,
-            weight: 1500,
-            active: true,
-          },
-          {
-            id: "p2",
-            name: "US Standard Pallet",
-            type: "GMA",
-            width: 101.6,
-            length: 121.9,
-            weight: 2000,
-            active: true,
-          },
-          {
-            id: "p3",
-            name: "Half Pallet",
-            type: "EUR",
-            width: 80,
-            length: 60,
-            weight: 750,
-            active: true,
-          },
-        ],
-        positions: [
-          {
-            id: "pos1",
-            name: "Ground Level",
             height: 160,
             weight: 1500,
             active: true,
           },
           {
-            id: "pos2",
-            name: "Raised Deck",
-            height: 220,
+            id: "p2",
+            name: "US Standard Box",
+            type: "GMA",
+            width: 101.6,
+            length: 121.9,
+            height: 200,
             weight: 2000,
             active: true,
           },
           {
-            id: "pos3",
-            name: "High Bay",
-            height: 300,
-            weight: 2500,
+            id: "p3",
+            name: "Half Box",
+            type: "EUR",
+            width: 80,
+            length: 60,
+            height: 160,
+            weight: 750,
             active: true,
           },
         ],
-        boxes: [
+        skus: [
           {
-            box_id: "b1",
+            sku_id: "b1",
             name: "2-Pack Small",
             width: 14,
             length: 9,
@@ -3238,7 +3097,7 @@
             active: true,
           },
           {
-            box_id: "b2",
+            sku_id: "b2",
             name: "4-Pack Medium",
             width: 18,
             length: 13,
@@ -3248,7 +3107,7 @@
             active: true,
           },
           {
-            box_id: "b3",
+            sku_id: "b3",
             name: "6-Pack Standard",
             width: 23,
             length: 15,
@@ -3258,7 +3117,7 @@
             active: true,
           },
           {
-            box_id: "b4",
+            sku_id: "b4",
             name: "10-Pack Distribution",
             width: 35,
             length: 25,
@@ -3268,7 +3127,7 @@
             active: true,
           },
           {
-            box_id: "b5",
+            sku_id: "b5",
             name: "25-Pack Bulk",
             width: 45,
             length: 35,
@@ -3296,14 +3155,34 @@
       }
 
       function getLocalData() {
-        return localLoad() || JSON.parse(JSON.stringify(DEFAULT_DATA));
+        const loaded = localLoad();
+        if (loaded) {
+          // Migrate old 'pallets' key to 'boxes' (box templates)
+          if (loaded.pallets && !loaded.boxes) {
+            loaded.boxes = loaded.pallets;
+            delete loaded.pallets;
+          }
+          if (!loaded.boxes)
+            loaded.boxes = JSON.parse(JSON.stringify(DEFAULT_DATA.boxes));
+          // Migrate old box templates without height field
+          loaded.boxes.forEach((p) => {
+            if (!p.height) p.height = 160;
+          });
+          // Migrate old 'boxes' key (SKUs) to 'skus'
+          // Note: after pallets->boxes migration above, loaded.boxes is now box templates
+          // SKUs were saved under 'skus' key — just ensure it exists
+          if (!loaded.skus) loaded.skus = [];
+          // Drop stale positions key
+          delete loaded.positions;
+          return loaded;
+        }
+        return JSON.parse(JSON.stringify(DEFAULT_DATA));
       }
 
       function saveLocalData() {
         localSave({
-          pallets: settingsData.pallets,
-          positions: settingsData.positions,
           boxes: settingsData.boxes,
+          skus: settingsData.skus,
         });
       }
 
@@ -3313,32 +3192,25 @@
       const DFLT_QTY = { b1: 40, b2: 30, b3: 20, b4: 10, b5: 5 };
       const DFLT_CHK = { b1: true, b2: true, b3: true, b4: true, b5: true };
 
-      let settingsData = { pallets: [], positions: [], boxes: [] };
+      let settingsData = { boxes: [], skus: [] };
       window.settingsData = settingsData;
-      let searchQueries = { pallets: "", positions: "", boxes: "" };
+      let searchQueries = { boxes: "", skus: "" };
 
       // ─── FETCH (local) ──────────────────────────
       async function fetchSettings() {
         const data = getLocalData();
-        settingsData.pallets = data.pallets;
-        settingsData.positions = data.positions;
         settingsData.boxes = data.boxes;
-
-        if (settingsData.positions.length > 0 && !S.positionId)
-          S.positionId =
-            settingsData.positions.find((p) => p.active)?.id ||
-            settingsData.positions[0].id;
+        settingsData.skus = data.skus;
 
         renderAll();
         initConfigPanel();
-        initBoxList();
+        initSkuList();
       }
 
       function renderAll() {
-        renderPallets();
-        renderPositions();
-        renderBoxes();
-        renderPalletInfoList();
+        renderBoxTemplates();
+        renderSkus();
+        renderBoxInfoList();
       }
 
       // ─── TOAST NOTIFICATION ─────────────────────
@@ -3365,11 +3237,11 @@
       }
 
       // ─── SETTINGS RENDER LOGIC ──────────────────
-      function renderPallets() {
-        const grid = document.querySelector("#tab-pallet .entity-grid");
+      function renderBoxTemplates() {
+        const grid = document.querySelector("#tab-box-template .entity-grid");
         if (!grid) return;
-        const q = searchQueries.pallets.toLowerCase();
-        const filtered = settingsData.pallets.filter(
+        const q = searchQueries.boxes.toLowerCase();
+        const filtered = settingsData.boxes.filter(
           (p) =>
             p.name.toLowerCase().includes(q) ||
             p.type.toLowerCase().includes(q),
@@ -3377,7 +3249,7 @@
 
         if (filtered.length === 0 && q) {
           grid.innerHTML =
-            '<div class="fcst-empty" style="grid-column: 1/-1">No pallets match your search.</div>';
+            '<div class="fcst-empty" style="grid-column: 1/-1">No boxes match your search.</div>';
           return;
         }
 
@@ -3387,37 +3259,41 @@
                 <div class="entity-card ${p._new ? "new-record-highlight" : ""}" data-id="${p.id}" ${p._new ? 'data-just-added="true"' : ""}>
                     <div class="card-row">
                         <div class="field-group full">
-                            <div class="field-label">Pallet Template Name</div>
-                            <input type="text" class="input-inline" value="${p.name}" onchange="updateEntity('pallets', '${p.id}', 'name', this.value)">
+                            <div class="field-label">Box Template Name</div>
+                            <input type="text" class="input-inline" value="${p.name}" onchange="updateEntity('boxes', '${p.id}', 'name', this.value)">
                         </div>
                     </div>
                     <div class="card-row">
                         <div class="field-group">
                             <div class="field-label">Type</div>
-                            <input type="text" class="input-inline" value="${p.type}" onchange="updateEntity('pallets', '${p.id}', 'type', this.value)">
+                            <input type="text" class="input-inline" value="${p.type}" onchange="updateEntity('boxes', '${p.id}', 'type', this.value)">
                         </div>
                         <div class="field-group">
                             <div class="field-label">Width (cm)</div>
-                            <input type="number" class="input-inline" value="${p.width}" onchange="updateEntity('pallets', '${p.id}', 'width', parseFloat(this.value))">
+                            <input type="number" class="input-inline" value="${p.width}" onchange="updateEntity('boxes', '${p.id}', 'width', parseFloat(this.value))">
                         </div>
                         <div class="field-group">
                             <div class="field-label">Length (cm)</div>
-                            <input type="number" class="input-inline" value="${p.length}" onchange="updateEntity('pallets', '${p.id}', 'length', parseFloat(this.value))">
+                            <input type="number" class="input-inline" value="${p.length}" onchange="updateEntity('boxes', '${p.id}', 'length', parseFloat(this.value))">
+                        </div>
+                        <div class="field-group">
+                            <div class="field-label">Max Height (cm)</div>
+                            <input type="number" class="input-inline" value="${p.height || 160}" onchange="updateEntity('boxes', '${p.id}', 'height', parseFloat(this.value))">
                         </div>
                         <div class="field-group">
                             <div class="field-label">Max Load (kg)</div>
-                            <input type="number" class="input-inline" value="${p.weight}" onchange="updateEntity('pallets', '${p.id}', 'weight', parseFloat(this.value))">
+                            <input type="number" class="input-inline" value="${p.weight}" onchange="updateEntity('boxes', '${p.id}', 'weight', parseFloat(this.value))">
                         </div>
                     </div>
                     <div class="card-footer">
                         <div class="toggle-item">
                             <span>Active Status</span>
                             <label class="toggle-switch">
-                                <input type="checkbox" ${p.active ? "checked" : ""} onchange="updateEntity('pallets', '${p.id}', 'active', this.checked)">
+                                <input type="checkbox" ${p.active ? "checked" : ""} onchange="updateEntity('boxes', '${p.id}', 'active', this.checked)">
                                 <span class="slider"></span>
                             </label>
                         </div>
-                        <button class="btn-icon-sm" onclick="deleteEntity('pallets', '${p.id}')" title="Delete Pallet">
+                        <button class="btn-icon-sm" onclick="deleteEntity('boxes', '${p.id}')" title="Delete Box">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                         </button>
                     </div>
@@ -3436,108 +3312,46 @@
         }
       }
 
-      function renderPositions() {
-        const grid = document.querySelector("#tab-position .entity-grid");
+      function renderSkus() {
+        const grid = document.querySelector("#tab-sku .entity-grid");
         if (!grid) return;
-        const q = searchQueries.positions.toLowerCase();
-        const filtered = settingsData.positions.filter((pos) =>
-          pos.name.toLowerCase().includes(q),
-        );
-
-        if (filtered.length === 0 && q) {
-          grid.innerHTML =
-            '<div class="fcst-empty" style="grid-column: 1/-1">No positions match your search.</div>';
-          return;
-        }
-
-        grid.innerHTML = filtered
-          .map(
-            (pos) => `
-                <div class="entity-card ${pos._new ? "new-record-highlight" : ""}" data-id="${pos.id}" ${pos._new ? 'data-just-added="true"' : ""}>
-                    <div class="card-row">
-                        <div class="field-group full">
-                            <div class="field-label">Position Name</div>
-                            <input type="text" class="input-inline" value="${pos.name}" onchange="updateEntity('positions', '${pos.id}', 'name', this.value)">
-                        </div>
-                    </div>
-                    <div class="card-row">
-                        <div class="field-group">
-                            <div class="field-label">Max Height (cm)</div>
-                            <input type="number" class="input-inline" value="${pos.height}" onchange="updateEntity('positions', '${pos.id}', 'height', parseFloat(this.value))">
-                        </div>
-                        <div class="field-group">
-                            <div class="field-label">Max Weight (kg)</div>
-                            <input type="number" class="input-inline" value="${pos.weight}" onchange="updateEntity('positions', '${pos.id}', 'weight', parseFloat(this.value))">
-                        </div>
-                    </div>
-                    <div class="card-footer">
-                        <div class="toggle-item">
-                            <span>Active</span>
-                            <label class="toggle-switch">
-                                <input type="checkbox" ${pos.active ? "checked" : ""} onchange="updateEntity('positions', '${pos.id}', 'active', this.checked)">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <button class="btn-icon-sm" onclick="deleteEntity('positions', '${pos.id}')">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                        </button>
-                    </div>
-                </div>
-            `,
-          )
-          .join("");
-
-        const firstCard = grid.firstElementChild;
-        if (firstCard && firstCard.dataset.justAdded === "true") {
-          const nameInput = firstCard.querySelector("input");
-          if (nameInput) setTimeout(() => nameInput.focus(), 100);
-          setTimeout(() => {
-            firstCard.removeAttribute("data-just-added");
-            settingsData.positions.forEach((p) => delete p._new);
-          }, 2000);
-        }
-      }
-
-      function renderBoxes() {
-        const grid = document.querySelector("#tab-box .entity-grid");
-        if (!grid) return;
-        const q = searchQueries.boxes.toLowerCase();
-        const filtered = settingsData.boxes.filter((b) =>
+        const q = searchQueries.skus.toLowerCase();
+        const filtered = settingsData.skus.filter((b) =>
           b.name.toLowerCase().includes(q),
         );
 
         if (filtered.length === 0 && q) {
           grid.innerHTML =
-            '<div class="fcst-empty" style="grid-column: 1/-1">No boxes match your search.</div>';
+            '<div class="fcst-empty" style="grid-column: 1/-1">No SKUs match your search.</div>';
           return;
         }
 
         grid.innerHTML = filtered
           .map(
             (b) => `
-                <div class="entity-card ${b._new ? "new-record-highlight" : ""}" data-id="${b.box_id || b.id}" ${b._new ? 'data-just-added="true"' : ""}>
+                <div class="entity-card ${b._new ? "new-record-highlight" : ""}" data-id="${b.sku_id || b.id}" ${b._new ? 'data-just-added="true"' : ""}>
                     <div class="card-row">
                         <div class="field-group full">
-                            <div class="field-label">Box Type Name</div>
-                            <input type="text" class="input-inline" value="${b.name}" onchange="updateEntity('boxes', '${b.box_id || b.id}', 'name', this.value)">
+                            <div class="field-label">SKU Name</div>
+                            <input type="text" class="input-inline" value="${b.name}" onchange="updateEntity('skus', '${b.sku_id || b.id}', 'name', this.value)">
                         </div>
                     </div>
                     <div class="card-row">
                         <div class="field-group">
                             <div class="field-label">Width (cm)</div>
-                            <input type="number" class="input-inline" value="${b.width}" onchange="updateEntity('boxes', '${b.box_id || b.id}', 'width', parseFloat(this.value))">
+                            <input type="number" class="input-inline" value="${b.width}" onchange="updateEntity('skus', '${b.sku_id || b.id}', 'width', parseFloat(this.value))">
                         </div>
                         <div class="field-group">
                             <div class="field-label">Length (cm)</div>
-                            <input type="number" class="input-inline" value="${b.length}" onchange="updateEntity('boxes', '${b.box_id || b.id}', 'length', parseFloat(this.value))">
+                            <input type="number" class="input-inline" value="${b.length}" onchange="updateEntity('skus', '${b.sku_id || b.id}', 'length', parseFloat(this.value))">
                         </div>
                         <div class="field-group">
                             <div class="field-label">Height (cm)</div>
-                            <input type="number" class="input-inline" value="${b.height}" onchange="updateEntity('boxes', '${b.box_id || b.id}', 'height', parseFloat(this.value))">
+                            <input type="number" class="input-inline" value="${b.height}" onchange="updateEntity('skus', '${b.sku_id || b.id}', 'height', parseFloat(this.value))">
                         </div>
                         <div class="field-group">
                             <div class="field-label">Weight (kg)</div>
-                            <input type="number" class="input-inline" value="${b.weight}" onchange="updateEntity('boxes', '${b.box_id || b.id}', 'weight', parseFloat(this.value))">
+                            <input type="number" class="input-inline" value="${b.weight}" onchange="updateEntity('skus', '${b.sku_id || b.id}', 'weight', parseFloat(this.value))">
                         </div>
                     </div>
                     <div class="card-footer">
@@ -3545,7 +3359,7 @@
                             <div class="toggle-item">
                                 <span>Active</span>
                                 <label class="toggle-switch">
-                                    <input type="checkbox" ${b.active ? "checked" : ""} onchange="updateEntity('boxes', '${b.box_id || b.id}', 'active', this.checked)">
+                                    <input type="checkbox" ${b.active ? "checked" : ""} onchange="updateEntity('skus', '${b.sku_id || b.id}', 'active', this.checked)">
                                     <span class="slider"></span>
                                 </label>
                             </div>
@@ -3553,10 +3367,10 @@
                         <div class="toggles-group">
                             <div class="toggle-item">
                                 <span>Color</span>
-                                <input type="color" value="${b.color || "#3B82F6"}" onchange="updateEntity('boxes', '${b.box_id || b.id}', 'color', this.value)" style="width:30px; height:24px; border:none; padding:0; cursor:pointer">
+                                <input type="color" value="${b.color || "#3B82F6"}" onchange="updateEntity('skus', '${b.sku_id || b.id}', 'color', this.value)" style="width:30px; height:24px; border:none; padding:0; cursor:pointer">
                             </div>
                         </div>
-                        <button class="btn-icon-sm" onclick="deleteEntity('boxes', '${b.box_id || b.id}')">
+                        <button class="btn-icon-sm" onclick="deleteEntity('skus', '${b.sku_id || b.id}')">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                         </button>
                     </div>
@@ -3571,20 +3385,19 @@
           if (nameInput) setTimeout(() => nameInput.focus(), 100);
           setTimeout(() => {
             firstCard.removeAttribute("data-just-added");
+            settingsData.skus.forEach((p) => delete p._new);
             settingsData.boxes.forEach((p) => delete p._new);
-            settingsData.pallets.forEach((p) => delete p._new);
           }, 2000);
         }
       }
 
       function handleSearch(type, val) {
         searchQueries[type] = val;
-        if (type === "pallets") {
-          renderPallets();
-          renderPalletInfoList();
+        if (type === "boxes") {
+          renderBoxTemplates();
+          renderBoxInfoList();
         }
-        if (type === "positions") renderPositions();
-        if (type === "boxes") renderBoxes();
+        if (type === "skus") renderSkus();
       }
 
       // ─── CRUD OPERATIONS (local) ────────────────
@@ -3592,27 +3405,20 @@
         const newId = type + "_" + Date.now();
         const newObj = {
           id: newId,
-          name:
-            "New " +
-            (type === "pallets"
-              ? "Pallet"
-              : type === "positions"
-                ? "Position"
-                : "Box"),
+          name: "New " + (type === "boxes" ? "Box" : "SKU"),
           active: true,
           _new: true,
         };
 
-        if (type === "pallets") {
+        if (type === "boxes") {
           Object.assign(newObj, {
             type: "TBD",
             width: 244,
             length: 315,
+            height: 160,
             weight: 6804,
           });
-        } else if (type === "positions") {
-          Object.assign(newObj, { height: 160, weight: 6804 });
-        } else if (type === "boxes") {
+        } else if (type === "skus") {
           const colors = [
             "#3B82F6",
             "#10B981",
@@ -3623,7 +3429,7 @@
             "#F97316",
             "#06B6D4",
           ];
-          newObj.box_id = newId;
+          newObj.sku_id = newId;
           Object.assign(newObj, {
             width: 10,
             length: 10,
@@ -3638,7 +3444,7 @@
         showToast(`New ${type.slice(0, -1)} added!`);
         renderAll();
         initConfigPanel();
-        initBoxList();
+        initSkuList();
 
         setTimeout(() => {
           const card = document.querySelector(
@@ -3653,14 +3459,14 @@
       }
 
       async function updateEntity(type, id, field, value) {
-        const idField = type === "boxes" ? "box_id" : "id";
+        const idField = type === "skus" ? "sku_id" : "id";
         const item = settingsData[type].find(
-          (i) => i.id === id || i.box_id === id,
+          (i) => i.id === id || i.sku_id === id,
         );
         if (item) item[field] = value;
         saveLocalData();
 
-        if (type === "boxes") initBoxList();
+        if (type === "skus") initSkuList();
         else initConfigPanel();
       }
 
@@ -3669,7 +3475,7 @@
           !confirm(`Are you sure you want to delete this ${type.slice(0, -1)}?`)
         )
           return;
-        const idField = type === "boxes" ? "box_id" : "id";
+        const idField = type === "skus" ? "sku_id" : "id";
         settingsData[type] = settingsData[type].filter(
           (i) => i[idField] !== id && i.id !== id,
         );
@@ -3677,7 +3483,7 @@
         showToast("Record deleted");
         renderAll();
         initConfigPanel();
-        initBoxList();
+        initSkuList();
       }
 
       // }
@@ -3707,52 +3513,20 @@
                 <div class="modal-content-wrap">
                     <div class="modal-sidebar">
                         <div class="sidebar-nav">
-                            <div class="nav-item active" data-tab="pallet">
+                            <div class="nav-item active" data-tab="box-template">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="12" x2="21" y2="12"></line><line x1="12" y1="3" x2="12" y2="21"></line></svg>
-                                Pallets
-                            </div>
-                            <div class="nav-item" data-tab="position">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                                Positions
-                            </div>
-                            <div class="nav-item" data-tab="box">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
                                 Boxes
+                            </div>
+                            <div class="nav-item" data-tab="sku">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                                SKUs
                             </div>
                         </div>
                     </div>
                     <div class="modal-main">
-                        <div class="settings-sec active" id="tab-pallet">
+                        <div class="settings-sec active" id="tab-box-template">
                             <div class="sec-hdr">
-                                <h3>Pallet Templates</h3>
-                                <div class="search-wrap">
-                                    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                                    <input type="text" placeholder="Search pallets..." oninput="handleSearch('pallets', this.value)">
-                                </div>
-                                <button class="btn-add" onclick="addEntity('pallets')">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                    Add Pallet
-                                </button>
-                            </div>
-                            <div class="entity-grid"></div>
-                        </div>
-                        <div class="settings-sec" id="tab-position">
-                            <div class="sec-hdr">
-                                <h3>Deck Positions</h3>
-                                <div class="search-wrap">
-                                    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                                    <input type="text" placeholder="Search positions..." oninput="handleSearch('positions', this.value)">
-                                </div>
-                                <button class="btn-add" onclick="addEntity('positions')">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                    Add Position
-                                </button>
-                            </div>
-                            <div class="entity-grid"></div>
-                        </div>
-                        <div class="settings-sec" id="tab-box">
-                            <div class="sec-hdr">
-                                <h3>Box Catalog</h3>
+                                <h3>Box Templates</h3>
                                 <div class="search-wrap">
                                     <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                                     <input type="text" placeholder="Search boxes..." oninput="handleSearch('boxes', this.value)">
@@ -3760,6 +3534,20 @@
                                 <button class="btn-add" onclick="addEntity('boxes')">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                                     Add Box
+                                </button>
+                            </div>
+                            <div class="entity-grid"></div>
+                        </div>
+                        <div class="settings-sec" id="tab-sku">
+                            <div class="sec-hdr">
+                                <h3>SKU Catalog</h3>
+                                <div class="search-wrap">
+                                    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                    <input type="text" placeholder="Search SKUs..." oninput="handleSearch('skus', this.value)">
+                                </div>
+                                <button class="btn-add" onclick="addEntity('skus')">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                    Add SKU
                                 </button>
                             </div>
                             <div class="entity-grid"></div>
@@ -3791,10 +3579,9 @@
 
       // Open/Close logic
       btnSettings.onclick = () => {
-        renderPallets();
-        renderPositions();
-        renderBoxes();
-        renderPalletInfoList();
+        renderBoxTemplates();
+        renderSkus();
+        renderBoxInfoList();
         modalOverlay.classList.add("show");
       };
       const closeModal = () => modalOverlay.classList.remove("show");
@@ -3811,8 +3598,7 @@
       const tooltip = document.getElementById("tooltip");
 
       let S = {
-        palletId: null,
-        positionId: null,
+        boxId: null,
         qty: {},
         chk: {},
         placedQty: {},
@@ -3821,48 +3607,44 @@
         totalWeight: 0,
         optimized: false,
         isManual: false,
-        selectedPalletIds: [], // pallets chosen by user to pass into packItemsIntoBoxes
-        // Multi-pallet support
-        palletsData: [], // array of { layout, layerDefs, totalWeight, actualHeight, placedQty }
-        activePalletIdx: 0, // which pallet is currently focused in the right panel
+        selectedBoxIds: [], // boxes chosen by user to pass into packItemsIntoBoxes
+        // Multi-box support
+        boxesData: [], // array of { layout, layerDefs, totalWeight, actualHeight, placedQty }
+        activeBoxIdx: 0, // which box is currently focused in the right panel
       };
       window.S = S; // Expose for 3D script
 
       // ─── BOX LIST ───────────────────────────────
-      function initBoxList() {
-        const el = document.getElementById("box-list");
+      function initSkuList() {
+        const el = document.getElementById("sku-list");
         if (!el) return;
 
-        if (!settingsData.boxes || settingsData.boxes.length === 0) {
+        if (!settingsData.skus || settingsData.skus.length === 0) {
           el.innerHTML =
-            '<div class="fcst-empty">No boxes found in database.</div>';
+            '<div class="fcst-empty">No SKUs found in database.</div>';
           return;
         }
 
-        const activeBoxes = settingsData.boxes.filter((b) => b.active);
-        if (activeBoxes.length === 0) {
+        const activeSkus = settingsData.skus.filter((b) => b.active);
+        if (activeSkus.length === 0) {
           el.innerHTML =
-            '<div class="fcst-empty">No active boxes to select. Check settings.</div>';
+            '<div class="fcst-empty">No active SKUs to select. Check settings.</div>';
           return;
         }
 
-        activeBoxes.forEach((b) => {
-          const id = b.box_id || b.id;
+        activeSkus.forEach((b) => {
+          const id = b.sku_id || b.id;
           if (S.qty[id] === undefined) S.qty[id] = 0;
-          if (S.chk[id] === undefined) S.chk[id] = false; // Default: Not ticked
+          if (S.chk[id] === undefined) S.chk[id] = true; // Always active
         });
 
-        el.innerHTML = activeBoxes
+        el.innerHTML = activeSkus
           .map((b) => {
-            const id = b.box_id || b.id;
-            const boxColor = b.color || "#3B82F6";
+            const id = b.sku_id || b.id;
+            const skuColor = b.color || "#3B82F6";
             let placed;
-            if (
-              S.activePalletIdx === -1 &&
-              S.palletsData &&
-              S.palletsData.length
-            ) {
-              placed = S.palletsData.reduce(
+            if (S.activeBoxIdx === -1 && S.boxesData && S.boxesData.length) {
+              placed = S.boxesData.reduce(
                 (sum, pd) => sum + (pd.placedQty[id] || 0),
                 0,
               );
@@ -3873,13 +3655,12 @@
             const isShort = S.optimized && requested > placed;
 
             return `
-                    <div class="box-row${S.chk[id] && S.qty[id] > 0 ? " active" : ""}${isShort ? " short" : ""}" id="row-${id}">
-                      <input type="checkbox" class="box-chk" data-id="${id}" ${S.chk[id] ? "checked" : ""}>
-                      <div class="box-dot" style="background:${boxColor}"></div>
-                      <div class="box-info">
-                        <div class="box-name">${b.name}</div>
-                        <div class="box-dim">${b.width}×${b.length}×${b.height}cm · ${b.weight}kg</div>
-                        ${S.optimized && requested > 0 ? `<div class="box-status ${isShort ? "text-red" : "text-green"}">${placed} / ${requested} placed</div>` : ""}
+                    <div class="sku-row${S.qty[id] > 0 ? " active" : ""}${isShort ? " short" : ""}" id="row-${id}">
+                      <div class="sku-dot" style="background:${skuColor}"></div>
+                      <div class="sku-info">
+                        <div class="sku-name">${b.name}</div>
+                        <div class="sku-dim">${b.width}×${b.length}×${b.height}cm · ${b.weight}kg</div>
+                        ${S.optimized && requested > 0 ? `<div class="sku-status ${isShort ? "text-red" : "text-green"}">${placed} / ${requested} placed</div>` : ""}
                       </div>
                       <div class="qty-ctrl">
                         <button class="qty-b" data-id="${id}" data-d="-1">−</button>
@@ -3890,14 +3671,6 @@
                 `;
           })
           .join("");
-
-        el.querySelectorAll(".box-chk").forEach((c) =>
-          c.addEventListener("change", (e) => {
-            S.chk[e.target.dataset.id] = e.target.checked;
-            refreshRow(e.target.dataset.id);
-            updateSummary();
-          }),
-        );
 
         el.querySelectorAll(".qty-b").forEach((b) =>
           b.addEventListener("click", (e) => {
@@ -3926,28 +3699,28 @@
       function refreshRow(id) {
         const r = document.getElementById("row-" + id);
         if (!r) return;
-        r.className = "box-row" + (S.chk[id] && S.qty[id] > 0 ? " active" : "");
+        r.className = "sku-row" + (S.qty[id] > 0 ? " active" : "");
       }
 
-      // Updates .box-status text in .box-info for all boxes based on the active pallet
-      function refreshBoxStatus() {
+      // Updates .sku-status text in .sku-info for all SKUs based on the active box
+      function refreshSkuStatus() {
         if (!S.optimized) return;
-        const viewAll = S.activePalletIdx === -1;
+        const viewAll = S.activeBoxIdx === -1;
         const activePd =
-          S.palletsData && S.palletsData.length
-            ? S.palletsData[Math.max(0, S.activePalletIdx)]
+          S.boxesData && S.boxesData.length
+            ? S.boxesData[Math.max(0, S.activeBoxIdx)]
             : null;
         if (!activePd && !viewAll) return;
-        settingsData.boxes
+        settingsData.skus
           .filter((b) => b.active)
           .forEach((b) => {
-            const id = b.box_id || b.id;
+            const id = b.sku_id || b.id;
             const r = document.getElementById("row-" + id);
             if (!r) return;
-            const statusEl = r.querySelector(".box-status");
+            const statusEl = r.querySelector(".sku-status");
             if (!statusEl) return;
             const placed = viewAll
-              ? S.palletsData.reduce(
+              ? S.boxesData.reduce(
                   (sum, pd) => sum + (pd.placedQty[id] || 0),
                   0,
                 )
@@ -3956,39 +3729,35 @@
             const isShort = requested > placed;
             statusEl.textContent = `${placed} / ${requested} placed`;
             statusEl.className =
-              "box-status " + (isShort ? "text-red" : "text-green");
+              "sku-status " + (isShort ? "text-red" : "text-green");
             r.className =
-              "box-row" +
-              (S.chk[id] && requested > 0 ? " active" : "") +
+              "sku-row" +
+              (requested > 0 ? " active" : "") +
               (isShort ? " short" : "");
           });
       }
 
       // ─── CONFIG PANEL ───────────────────────────
       function initConfigPanel() {
-        renderPalletOptions();
-        renderPositionOptions();
+        renderBoxOptions();
       }
 
-      function renderPalletOptions() {
-        const el = document.getElementById("pallet-opts");
+      function renderBoxOptions() {
+        const el = document.getElementById("box-opts");
         if (!el) return;
-        const pallets = settingsData.pallets
+        const boxes = settingsData.boxes
           .filter((p) => p.active)
           .sort((a, b) => a.width * a.length - b.width * b.length);
-        if (!pallets.length) {
+        if (!boxes.length) {
           el.innerHTML =
-            '<div class="fcst-empty">No active pallets. Add pallets in Settings.</div>';
+            '<div class="fcst-empty">No active boxes. Add boxes in Settings.</div>';
           return;
         }
-        // Auto-select first pallet if nothing selected yet
-        if (!S.selectedPalletIds.length) {
-          S.selectedPalletIds = [pallets[0].id];
-        }
-        el.innerHTML = pallets
+
+        el.innerHTML = boxes
           .map(
             (p) => `
-          <div class="deck-opt ${S.selectedPalletIds.includes(p.id) ? "sel" : ""}" data-id="${p.id}" onclick="togglePallet('${p.id}')">
+          <div class="deck-opt data-id="${p.id}">
             <div class="deck-opt-hd">
               <span class="deck-opt-name">${p.name}</span>
               <span class="deck-badge">${p.type || "STD"}</span>
@@ -3997,6 +3766,10 @@
               <div class="deck-spec">
                 <svg class="spec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
                 ${p.width}×${p.length}cm
+              </div>
+              <div class="deck-spec">
+                <svg class="spec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+                Max height ${p.height || 160}cm
               </div>
               <div class="deck-spec">
                 <svg class="spec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
@@ -4009,101 +3782,48 @@
           .join("");
       }
 
-      function togglePallet(id) {
-        S.selectedPalletIds = [id];
-        renderPalletOptions();
-      }
-
-      // Keep renderPalletInfoList as an alias so existing call sites don't break
-      function renderPalletInfoList() {
-        renderPalletOptions();
-      }
-
-      function renderPositionOptions() {
-        const el = document.getElementById("position-opts");
-        const activePositions = settingsData.positions
-          .filter((p) => p.active)
-          .sort((a, b) => a.weight - b.weight);
-        el.innerHTML = activePositions
-          .map(
-            (p) => `
-                <div class="deck-opt ${S.positionId === p.id ? "sel" : ""}" data-id="${p.id}" onclick="selectPosition('${p.id}')">
-                    <div class="deck-opt-hd">
-                        <span class="deck-opt-name">${p.name}</span>
-                    </div>
-                    <div class="deck-specs">
-                        <div class="deck-spec">
-                            <svg class="spec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
-                            Height: ${p.height}cm
-                        </div>
-                        <div class="deck-spec">
-                            <svg class="spec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
-                            Max weight: ${p.weight.toLocaleString()}kg
-                        </div>
-                    </div>
-                </div>
-            `,
-          )
-          .join("");
-      }
-
-      function selectPosition(id) {
-        S.positionId = S.positionId === id ? null : id;
-        renderPositionOptions();
-      }
-
-      function updatePalletDims() {
-        if (!S.optimized) return;
-        const pos = settingsData.positions.find((i) => i.id === S.positionId);
-        const p =
-          settingsData.pallets.find((i) => i.id === S.palletId) ||
-          settingsData.pallets.find((i) => i.active);
-        if (!p || !pos) return;
-        document.getElementById("g-max").textContent =
-          " / " + Math.min(p.weight, pos.weight).toLocaleString() + " kg";
-        if (document.getElementById("r-height-sub"))
-          document.getElementById("r-height-sub").textContent =
-            "of " + pos.height + "cm max";
+      // Keep renderBoxInfoList as an alias so existing call sites don't break
+      function renderBoxInfoList() {
+        renderBoxOptions();
       }
 
       // ─── SUMMARY ────────────────────────────────
       function updateSummary() {
-        let boxes = 0,
+        let skuCount = 0,
           types = 0;
         if (S.optimized) {
-          // Aggregate across all pallets
+          // Aggregate across all boxes
           const allPlacedQty = {};
-          S.palletsData.forEach((pd) => {
+          S.boxesData.forEach((pd) => {
             pd.layout.forEach((item) => {
               allPlacedQty[item.type] = (allPlacedQty[item.type] || 0) + 1;
             });
           });
-          boxes = S.palletsData.reduce((s, pd) => s + pd.layout.length, 0);
+          skuCount = S.boxesData.reduce((s, pd) => s + pd.layout.length, 0);
           types = Object.keys(allPlacedQty).length;
         } else {
-          settingsData.boxes
+          settingsData.skus
             .filter((b) => b.active)
             .forEach((b) => {
-              const id = b.box_id || b.id;
-              if (S.chk[id] && S.qty[id] > 0) {
-                boxes += S.qty[id];
-                types++;
+              const id = b.sku_id || b.id;
+              if (S.qty[id] > 0) {
               }
             });
         }
-        document.getElementById("sum-boxes").textContent = boxes;
-        document.getElementById("sum-types").textContent = types;
-        document.getElementById("sum-pallets").textContent = S.optimized
-          ? S.palletsData.length
+        document.getElementById("sum-skus").textContent = skuCount;
+        const sumTypes = document.getElementById("sum-types");
+        if (sumTypes) sumTypes.textContent = types;
+        document.getElementById("sum-boxes").textContent = S.optimized
+          ? S.boxesData.length
           : "—";
         if (S.optimized) computeEfficiency();
       }
       function computeEfficiency() {
-        if (!S.palletsData || !S.palletsData.length) {
+        if (!S.boxesData || !S.boxesData.length) {
           document.getElementById("sum-eff").textContent = "—";
           return;
         }
-        const totalWeight = S.palletsData.reduce(
+        const totalWeight = S.boxesData.reduce(
           (sum, pd) => sum + (pd.totalWeight || 0),
           0,
         );
@@ -4113,23 +3833,23 @@
       // ─── PACKING ENGINE ────────────────
       //
       // Runs three strategies and picks the winner by minimum
-      // total container-volume used (= densest packing on the pallet).
+      // total container-volume used (= densest packing in the box).
       //
       //   Strategy 1 — packWithSmallestFirst : First-Fit Decreasing (FFD)
       //   Strategy 2 — packWithMaxFill       : Best-Fit, max space utilisation
       //   Strategy 3 — packBySimilarSize     : Similar-size clustering
       //
-      // Each strategy uses tryPackInBox → findBestPlacement / updateSpaces
+      // Each strategy uses tryPackInSku → findBestPlacement / updateSpaces
       // which implement the Guillotine-Cut algorithm with gravity-aware
       // space sorting and full 6-orientation rotation support.
       //
       // Axis mapping (engine → TimeX2 layout item)
-      //   item.length → layout.w  (pallet x-axis / width)
-      //   item.width  → layout.d  (pallet z-axis / length/depth)
+      //   item.length → layout.w  (box x-axis / width)
+      //   item.width  → layout.d  (box z-axis / length/depth)
       //   item.height → layout.h  (y-axis / upward)
       //   placement.x → layout.x
-      //   placement.z → layout.z  (depth position on pallet)
-      //   placement.y → layout.y  (height off pallet floor, used for layers)
+      //   placement.z → layout.z  (depth position in box)
+      //   placement.y → layout.y  (height off box floor, used for layers)
       // ─────────────────────────────────────────────────────────────────────
 
       /**
@@ -4591,38 +4311,31 @@
         console.log("Optimization started...");
         document.getElementById("vis-empty").style.display = "none";
 
-        const pos = settingsData.positions.find((i) => i.id === S.positionId);
-        const activePallets = settingsData.pallets.filter((p) => p.active);
-        if (!activePallets.length) {
-          alert("No active pallet templates found. Add pallets in Settings.");
+        const activeBoxes = settingsData.boxes.filter((p) => p.active);
+        if (!activeBoxes.length) {
+          alert("No active box templates found. Add boxes in Settings.");
           return;
         }
-        // Use only user-selected pallets; fall back to all active if none selected
-        const selectedPallets = S.selectedPalletIds.length
-          ? activePallets.filter((p) => S.selectedPalletIds.includes(p.id))
-          : activePallets;
-        if (!selectedPallets.length) {
-          alert("Please select at least one pallet template.");
-          return;
-        }
+        // Use only user-selected boxes; fall back to all active if none selected
+        const selectedBoxes = settingsData.boxes;
 
-        // Collect & expand box instances
-        const rawBoxes = [];
-        settingsData.boxes
+        // Collect & expand SKU instances
+        const rawSkus = [];
+        settingsData.skus
           .filter((b) => b.active)
           .forEach((b) => {
-            const id = b.box_id || b.id;
-            if (S.chk[id] && S.qty[id] > 0) {
-              for (let i = 0; i < S.qty[id]; i++) rawBoxes.push({ ...b, id });
+            const id = b.sku_id || b.id;
+            if (S.qty[id] > 0) {
+              for (let i = 0; i < S.qty[id]; i++) rawSkus.push({ ...b, id });
             }
           });
-        if (!rawBoxes.length) {
-          alert("Please select at least one box type with quantity > 0");
+        if (!rawSkus.length) {
+          alert("Please select at least one SKU with quantity > 0");
           return;
         }
 
         // Convert to packing-engine item format
-        const items = rawBoxes.map((b, idx) => ({
+        const items = rawSkus.map((b, idx) => ({
           _uid: idx,
           id: b.id,
           name: b.name,
@@ -4636,33 +4349,32 @@
         }));
         items.sort((a, b) => b.volume - a.volume);
 
-        // Build BOX_TYPES from user-selected pallets only
+        // Build BOX_TYPES from user-selected boxes only
         const BOX_TYPES = {};
-        selectedPallets.forEach((p) => {
-          const maxH = pos ? pos.height : 1e6;
+        selectedBoxes.forEach((p) => {
           BOX_TYPES[p.id] = {
             width: p.width,
             depth: p.length,
-            height: maxH,
+            height: p.height || 160,
             name: p.name,
-            palletWeight: p.weight, // per-pallet weight limit
+            boxWeight: p.weight, // per-box weight limit
           };
         });
-        const posWeight = pos ? pos.weight : Infinity; // total weight limit across all pallets
+        const posWeight = Infinity; // no global weight cap without deck position
 
         // Run packItemsIntoBoxes — returns one result object per pallet
         const packedBoxes = packItemsIntoBoxes(items, BOX_TYPES, posWeight);
 
-        // ── Build one layout per packed pallet ──────────────────────────────
-        S.palletsData = [];
+        // ── Build one layout per packed box ──────────────────────────────
+        S.boxesData = [];
         let globalSeq = 0;
-        let remainingPosWeight = posWeight; // track remaining global weight across pallets
+        let remainingPosWeight = posWeight; // track remaining global weight across boxes
 
         packedBoxes.forEach((pb) => {
-          // pb.type is the pallet id chosen by the algorithm
+          // pb.type is the box id chosen by the algorithm
           const p =
-            settingsData.pallets.find((i) => i.id === pb.type) ||
-            selectedPallets[0];
+            settingsData.boxes.find((i) => i.id === pb.type) ||
+            selectedBoxes[0];
 
           const layout = [];
           const layerDefs = [];
@@ -4720,9 +4432,9 @@
             placedQty[item.type] = (placedQty[item.type] || 0) + 1;
           });
 
-          // Store palletId per pallet so renderers/analytics know which template was used
-          S.palletsData.push({
-            palletId: p.id,
+          // Store boxId per box so renderers/analytics know which template was used
+          S.boxesData.push({
+            boxId: p.id,
             layout,
             layerDefs,
             totalWeight: runningWeight,
@@ -4732,39 +4444,36 @@
           remainingPosWeight -= runningWeight;
         });
 
-        // S.palletId = first pallet used (legacy fallback for analytics)
-        S.palletId = S.palletsData[0]?.palletId || selectedPallets[0].id;
+        // S.boxId = first box used (legacy fallback for analytics)
+        S.boxId = S.boxesData[0]?.boxId || selectedBoxes[0].id;
 
-        // ── Set active pallet (default: first) ─────────────────────────────
-        const prevPalletCount = S.palletsData_prev
-          ? S.palletsData_prev.length
-          : 0;
-        const newPalletCount = packedBoxes.length;
-        const shouldViewAll =
-          newPalletCount > prevPalletCount && newPalletCount > 1;
+        // ── Set active box (default: first) ─────────────────────────────
+        const prevBoxCount = S.boxesData_prev ? S.boxesData_prev.length : 0;
+        const newBoxCount = packedBoxes.length;
+        const shouldViewAll = newBoxCount > prevBoxCount && newBoxCount > 1;
 
         if (shouldViewAll) {
-          S.activePalletIdx = -1;
-        } else if (prevPalletCount === 0) {
-          // First run — select first pallet if only 1, else view all
-          S.activePalletIdx = newPalletCount === 1 ? 0 : -1;
-        } else if (newPalletCount < prevPalletCount) {
-          // Fewer pallets than before — select last pallet in array
-          S.activePalletIdx = newPalletCount - 1;
+          S.activeBoxIdx = -1;
+        } else if (prevBoxCount === 0) {
+          // First run — select first box if only 1, else view all
+          S.activeBoxIdx = newBoxCount === 1 ? 0 : -1;
+        } else if (newBoxCount < prevBoxCount) {
+          // Fewer boxes than before — select last box in array
+          S.activeBoxIdx = newBoxCount - 1;
         }
-        // else: keep current S.activePalletIdx as-is
-        S.palletsData_prev = S.palletsData.map((pd) => ({ ...pd }));
-        _syncActivePallet();
+        // else: keep current S.activeBoxIdx as-is
+        S.boxesData_prev = S.boxesData.map((pd) => ({ ...pd }));
+        _syncActiveBox();
 
-        // Show/hide Pallet Analytics panel and update grid
+        // Show/hide Box Analytics panel and update grid
         const rp = document.getElementById("right-panel");
         const ag = document.querySelector(".app");
-        if (S.activePalletIdx === -1) {
+        if (S.activeBoxIdx === -1) {
           if (rp) rp.style.display = "none";
-          if (ag) ag.style.gridTemplateColumns = "380px 1fr";
+          if (ag) ag.style.gridTemplateColumns = "340px 1fr";
         } else {
           if (rp) rp.style.display = "";
-          if (ag) ag.style.gridTemplateColumns = "380px 1fr 300px";
+          if (ag) ag.style.gridTemplateColumns = "340px 1fr 300px";
         }
 
         S.optimized = true;
@@ -4774,13 +4483,10 @@
         _updateRevertButtons();
 
         renderLayout();
-        updateCapacity();
         computeEfficiency();
         updateSummary();
-        initBoxList();
-        renderPalletEfficiency();
-        renderForecast();
-        renderPalletTabs();
+        initSkuList();
+        renderBoxTabs();
 
         // Show 3D view
         document.getElementById("vis-empty").style.display = "none";
@@ -4802,24 +4508,24 @@
         );
       }
 
-      // Sync S.layout / S.layerDefs / etc. from the active pallet slice
-      function _syncActivePallet() {
-        const pd = S.palletsData[S.activePalletIdx];
+      // Sync S.layout / S.layerDefs / etc. from the active box slice
+      function _syncActiveBox() {
+        const pd = S.boxesData[S.activeBoxIdx];
         if (!pd) return;
         S.layout = pd.layout;
         S.layerDefs = pd.layerDefs;
         S.totalWeight = pd.totalWeight;
         S.actualHeight = pd.actualHeight;
         S.placedQty = pd.placedQty;
-        // Keep S.palletId in sync so drag/tooltip functions have the right pallet dims
-        if (pd.palletId) S.palletId = pd.palletId;
+        // Keep S.boxId in sync so drag/tooltip functions have the right box dims
+        if (pd.boxId) S.boxId = pd.boxId;
       }
 
-      // Render pallet selector tabs above the 3D view
-      function renderPalletTabs() {
-        let bar = document.getElementById("pallet-tabs-bar");
+      // Render box selector tabs above the 3D view
+      function renderBoxTabs() {
+        let bar = document.getElementById("box-tabs-bar");
         if (!bar) return;
-        const count = S.palletsData.length;
+        const count = S.boxesData.length;
         if (!count) {
           bar.style.display = "none";
           return;
@@ -4827,34 +4533,30 @@
         bar.style.display = "flex";
         bar.innerHTML = "";
 
-        S.palletsData.forEach((pd, idx) => {
+        S.boxesData.forEach((pd, idx) => {
           const tab = document.createElement("button");
-          tab.className =
-            "pallet-tab" + (idx === S.activePalletIdx ? " active" : "");
-          const _tabPallet =
-            window.settingsData.pallets.find((i) => i.id === pd.palletId) || {};
-          const _tabName = _tabPallet.name || `Pallet ${idx + 1}`;
-          tab.innerHTML = `<span class="pt-num">${idx + 1}</span><span class="pt-label">${_tabName}</span><span class="pt-boxes">${pd.layout.length} boxes</span>`;
+          tab.className = "box-tab" + (idx === S.activeBoxIdx ? " active" : "");
+          const _tabBox =
+            window.settingsData.boxes.find((i) => i.id === pd.boxId) || {};
+          const _tabName = _tabBox.name || `Box ${idx + 1}`;
+          tab.innerHTML = `<span class="pt-num">${idx + 1}</span><span class="pt-label">${_tabName}</span><span class="pt-skus">${pd.layout.length} SKUs</span>`;
           tab.addEventListener("click", () => {
-            S.activePalletIdx = idx;
-            _syncActivePallet();
+            S.activeBoxIdx = idx;
+            _syncActiveBox();
             _dragHistory = [];
             _lastDragSnapshot = null;
             _originalLayout = S.layout.map((i) => ({ ...i }));
             _updateRevertButtons();
-            renderPalletTabs();
+            renderBoxTabs();
             computeEfficiency();
             updateSummary();
-            updateCapacity();
-            renderPalletEfficiency();
-            renderForecast();
-            refreshBoxStatus();
+            refreshSkuStatus();
             render3DLayout();
-            // Show Pallet Analytics panel and recalculate 3D
+            // Show Box Analytics panel and recalculate 3D
             const rp = document.getElementById("right-panel");
             const ag = document.querySelector(".app");
             if (rp) rp.style.display = "";
-            if (ag) ag.style.gridTemplateColumns = "380px 1fr 300px";
+            if (ag) ag.style.gridTemplateColumns = "340px 1fr 300px";
             setTimeout(() => {
               if (renderer3D) render3DLayout();
             }, 50);
@@ -4864,22 +4566,20 @@
 
         // "View All" toggle
         const allBtn = document.createElement("button");
-        allBtn.className =
-          "pallet-tab" + (S.activePalletIdx === -1 ? " active" : "");
+        allBtn.className = "box-tab" + (S.activeBoxIdx === -1 ? " active" : "");
         allBtn.innerHTML = '<span class="pt-label">View All</span>';
         allBtn.style.marginLeft = "auto";
         allBtn.addEventListener("click", () => {
-          S.activePalletIdx = -1;
-          renderPalletTabs();
+          S.activeBoxIdx = -1;
+          renderBoxTabs();
           render3DLayout();
-          initBoxList();
-          renderForecast();
-          refreshBoxStatus();
-          // Hide Pallet Analytics panel and expand 3D
+          initSkuList();
+          refreshSkuStatus();
+          // Hide Box Analytics panel and expand 3D
           const rp = document.getElementById("right-panel");
           const ag = document.querySelector(".app");
           if (rp) rp.style.display = "none";
-          if (ag) ag.style.gridTemplateColumns = "380px 1fr";
+          if (ag) ag.style.gridTemplateColumns = "340px 1fr";
           setTimeout(() => {
             if (renderer3D) render3DLayout();
           }, 50);
@@ -4902,8 +4602,7 @@
         document.getElementById("tt-wt").textContent = item.kg + " kg";
         document.getElementById("tt-layer").textContent =
           "Layer " + item.layer + ` (z:${item.z}cm)`;
-        document.getElementById("tt-pos").textContent =
-          `x:${item.x} y:${item.y}`;
+        // tt-pos removed
         tt.style.left = ev.clientX + 14 + "px";
         tt.style.top = ev.clientY - 50 + "px";
         tt.classList.add("show");
@@ -4912,360 +4611,6 @@
         document.getElementById("tooltip").classList.remove("show");
       }
 
-      // ─── CAPACITY ───────────────────────────────
-      function updateCapacity() {
-        if (!S.optimized) return;
-
-        const activeIdx = Math.max(0, S.activePalletIdx);
-        const activePd = S.palletsData?.[activeIdx];
-        if (!activePd) return;
-
-        const pos = settingsData.positions.find((i) => i.id === S.positionId);
-
-        const p =
-          settingsData.pallets.find((i) => i.id === activePd.palletId) ||
-          settingsData.pallets[0];
-
-        if (!p) return;
-
-        let deckUsedBefore = 0;
-        for (let i = 0; i < activeIdx; i++) {
-          deckUsedBefore += S.palletsData[i].totalWeight || 0;
-        }
-
-        const deckRemainingBefore = pos
-          ? Math.max(0, pos.weight - deckUsedBefore)
-          : Infinity;
-
-        const effectiveMax = Math.min(p.weight, deckRemainingBefore);
-
-        const palletUsed = activePd.totalWeight || 0;
-
-        const isLastPallet = activeIdx === S.palletsData.length - 1;
-        const totalAllPallets = S.palletsData.reduce(
-          (s, pd) => s + (pd.totalWeight || 0),
-          0,
-        );
-        const exceedsPalletMax = totalAllPallets > p.weight;
-
-        let denominator = p.weight;
-        if (isLastPallet && exceedsPalletMax && pos) {
-          const otherPalletsWeight = S.palletsData.reduce(
-            (s, pd, i) => s + (i !== activeIdx ? pd.totalWeight || 0 : 0),
-            0,
-          );
-          denominator = Math.max(0, pos.weight - otherPalletsWeight);
-        } else if (pos) {
-          denominator = Math.min(p.weight, pos.weight);
-        }
-
-        const pctValue = denominator > 0 ? (palletUsed / denominator) * 100 : 0;
-
-        const remainingForPlacement = Math.max(0, effectiveMax - palletUsed);
-
-        document.getElementById("g-cur").textContent = palletUsed.toFixed(1);
-        document.getElementById("g-max").textContent =
-          " / " + denominator.toFixed(1) + " kg";
-
-        const fill = document.getElementById("g-fill");
-        if (fill) {
-          fill.style.width = Math.min(pctValue, 100) + "%";
-        }
-
-        document.getElementById("g-pct").textContent =
-          pctValue.toFixed(2) + "% used";
-
-        const rw = document.getElementById("r-weight");
-        if (rw) {
-          rw.textContent = remainingForPlacement.toFixed(1);
-        }
-      }
-
-      function renderPalletEfficiency() {
-        const el = document.getElementById("pallet-eff-list");
-        if (!el) return;
-
-        if (!S.optimized || !S.palletsData || !S.palletsData.length) {
-          el.innerHTML =
-            '<div class="fcst-empty">Run optimization to see efficiency</div>';
-          return;
-        }
-
-        const pos = settingsData.positions.find((i) => i.id === S.positionId);
-        const activePd = S.palletsData[Math.max(0, S.activePalletIdx)];
-        const activePalletId = activePd ? activePd.palletId : S.palletId;
-
-        const p =
-          settingsData.pallets.find((i) => i.id === activePalletId) ||
-          settingsData.pallets.find((i) => i.active) ||
-          settingsData.pallets[0];
-
-        // Total weight across ALL pallets
-        const totalUsedWeight =
-          S.palletsData.reduce((sum, pallet) => {
-            return sum + (pallet.totalWeight || 0);
-          }, 0) || 0;
-
-        // Global remaining shipment weight
-        const globalRemaining = pos
-          ? Math.max(0, pos.weight - totalUsedWeight)
-          : Infinity;
-
-        // Active pallet used
-        const palletUsed = activePd ? activePd.totalWeight : S.totalWeight || 0;
-        const activeIdx = Math.max(0, S.activePalletIdx);
-        const isLastPallet = activeIdx === S.palletsData.length - 1;
-        const totalAllPallets = S.palletsData.reduce(
-          (s, pd) => s + (pd.totalWeight || 0),
-          0,
-        );
-        const exceedsPalletMax = totalAllPallets > p.weight;
-
-        let denominator = p.weight;
-        if (isLastPallet && exceedsPalletMax && pos) {
-          const otherPalletsWeight = S.palletsData.reduce(
-            (s, pd, i) => s + (i !== activeIdx ? pd.totalWeight || 0 : 0),
-            0,
-          );
-          denominator = Math.max(0, pos.weight - otherPalletsWeight);
-        } else if (pos) {
-          denominator = Math.min(p.weight, pos.weight);
-        }
-
-        let remainingForPlacement = denominator - palletUsed;
-
-        el.innerHTML = "";
-        const grid = document.createElement("div");
-        grid.className = "cap-grid";
-        grid.style.gridTemplateColumns = "repeat(auto-fill, minmax(90px, 1fr))";
-
-        // ✅ Weight Left card (FIXED)
-        const weightCard = document.createElement("div");
-        weightCard.className = "cap-card";
-        weightCard.innerHTML = `
-    <div class="cap-card-label">Weight Left</div>
-    <div class="cap-card-val">
-      <span id="r-weight">${remainingForPlacement.toFixed(1)}</span>
-      <span class="cap-card-unit">kg</span>
-    </div>
-    <div class="cap-card-sub">Available to load</div>
-  `;
-        grid.appendChild(weightCard);
-
-        // ───── Space Efficiency (unchanged logic) ─────
-        const pd = activePd;
-        if (pd && p) {
-          let usedVol = 0;
-          pd.layout.forEach((i) => (usedVol += i.w * i.d * i.h));
-
-          const heightUsed = pos ? pos.height : pd.actualHeight || 1;
-          const containerVol = p.width * p.length * heightUsed;
-
-          const eff =
-            containerVol > 0 ? Math.round((usedVol / containerVol) * 100) : 0;
-
-          const effColor =
-            eff >= 70
-              ? "var(--secondary)"
-              : eff >= 40
-                ? "var(--warning)"
-                : "var(--danger)";
-
-          const card = document.createElement("div");
-          card.className = "cap-card";
-          card.innerHTML = `
-      <div class="cap-card-label">Used Space</div>
-      <div class="cap-card-val" style="color:${effColor}">
-        <span>${eff}</span>
-        <span class="cap-card-unit">%</span>
-      </div>
-      <div class="cap-card-sub"
-           style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
-           title="${p.name}">
-        Of pallet
-      </div>
-    `;
-          grid.appendChild(card);
-        }
-
-        el.appendChild(grid);
-      }
-
-      // ─── FORECAST ───────────────────────────────
-      function renderForecast() {
-        const list = document.getElementById("fcst-list");
-        if (!list) return;
-
-        const pos = settingsData.positions.find((i) => i.id === S.positionId);
-        const viewAll = S.activePalletIdx === -1;
-
-        // Helper: compute how many extra copies of a box fit on a given pallet
-        function extraFitsOnPallet(pd, b) {
-          const p =
-            settingsData.pallets.find((i) => i.id === pd.palletId) ||
-            settingsData.pallets.find((i) => i.active) ||
-            settingsData.pallets[0];
-
-          if (!p) return 0;
-
-          const maxH = pos ? pos.height : 1e6;
-
-          // Total used across ALL pallets
-          const totalUsedWeight =
-            S.palletsData.reduce((sum, pallet) => {
-              return sum + (pallet.totalWeight || 0);
-            }, 0) || 0;
-
-          // Global remaining shipment weight
-          const globalRemaining = pos
-            ? Math.max(0, pos.weight - totalUsedWeight)
-            : Infinity;
-
-          // Remaining on THIS pallet
-          const palletRemaining = Math.max(0, p.weight - pd.totalWeight);
-
-          // Final allowed remaining for this pallet
-          const remWeight = Math.min(palletRemaining, globalRemaining);
-
-          const byWeight =
-            b.weight > 0 ? Math.floor(remWeight / b.weight) : 999;
-
-          // ---- Space logic (unchanged) ----
-          const existingItems = pd.layout.map((item, i) => ({
-            _uid: i,
-            id: item.type,
-            name: item.name,
-            color: item.color,
-            weight: item.kg || 0,
-            volume: item.w * item.d * item.h,
-            length: item.w,
-            width: item.d,
-            height: item.h,
-            rotations: generateRotations(item.w, item.d, item.h),
-          }));
-
-          const palletDim = { width: p.width, depth: p.length, height: maxH };
-          const rots = generateRotations(b.width, b.length, b.height);
-
-          const byVolume = Math.floor(
-            (palletDim.depth * palletDim.height * palletDim.width) /
-              (b.width * b.length * b.height),
-          );
-
-          const maxTry = Math.min(byWeight, byVolume);
-
-          const extra = {
-            _uid: 10000,
-            id: b.box_id || b.id,
-            name: b.name,
-            color: b.color,
-            weight: b.weight || 0,
-            volume: b.width * b.length * b.height,
-            length: b.width,
-            width: b.length,
-            height: b.height,
-            rotations: rots,
-          };
-
-          let countedItem = existingItems.length;
-          const listExtras = [extra];
-          let bySpace = 0;
-
-          for (let i = 1; i <= maxTry; i++) {
-            const tempRes = tryPackInBox(
-              [...existingItems, ...listExtras],
-              "forecast",
-              palletDim,
-            );
-
-            if (tempRes.items.length === countedItem + 1) {
-              countedItem = tempRes.items.length;
-              bySpace = tempRes.items.filter((it) => it._uid >= 10000).length;
-              listExtras.push({ ...extra, _uid: extra._uid + i });
-            } else {
-              break;
-            }
-          }
-
-          return Math.min(byWeight, bySpace);
-        }
-        // Determine which pallets to calculate for
-        const palletsToCalc = viewAll
-          ? S.palletsData
-          : [S.palletsData[S.activePalletIdx]];
-
-        // Build pallet header info
-        if (viewAll) {
-          const totalBoxes = S.palletsData.reduce(
-            (s, pd) => s + pd.layout.length,
-            0,
-          );
-          const totalW = S.palletsData.reduce((s, pd) => s + pd.totalWeight, 0);
-          list.innerHTML = `
-            <div style="padding:8px 10px 10px; background:rgba(0,102,255,.04); border:1px solid rgba(0,102,255,.12); border-radius:8px; margin-bottom:10px; font-size:11px;">
-              <div style="font-weight:700; color:var(--text-primary); margin-bottom:4px;">
-                All ${S.palletsData.length} Pallets &mdash; Combined Capacity
-              </div>
-              <div style="color:var(--text-secondary);">${totalBoxes} boxes · ${totalW.toFixed(1)} kg total</div>
-            </div>`;
-        } else {
-          const activePd = S.palletsData[S.activePalletIdx];
-          const activeP =
-            settingsData.pallets.find((i) => i.id === activePd.palletId) ||
-            settingsData.pallets.find((i) => i.active) ||
-            settingsData.pallets[0];
-          if (!activeP) {
-            list.innerHTML = "";
-            return;
-          }
-          list.innerHTML = "";
-        }
-
-        const activeBoxes = settingsData.boxes.filter(
-          (b) =>
-            b.active && S.chk[b.box_id || b.id] && S.qty[b.box_id || b.id] > 0,
-        );
-        if (!activeBoxes.length) {
-          list.innerHTML += '<div class="fcst-empty">No boxes selected.</div>';
-          return;
-        }
-
-        activeBoxes.forEach((b) => {
-          // Sum additional fits across all pallets being shown
-          const totalAdditional = palletsToCalc.reduce(
-            (sum, pd) => sum + extraFitsOnPallet(pd, b),
-            0,
-          );
-          const additionalFits = totalAdditional;
-
-          let label, colorClass, sub;
-          if (additionalFits > 0) {
-            label = `+${additionalFits}`;
-            colorClass = "green";
-            sub = viewAll
-              ? `more fit across all pallets`
-              : `more fit on this pallet`;
-          } else {
-            label = "0";
-            colorClass = "orange";
-            sub = viewAll ? "all pallets at capacity" : "at capacity";
-          }
-
-          const row = document.createElement("div");
-          row.className = "fcst-row";
-          row.innerHTML = `
-            <div class="fcst-row-hd">
-              <div class="fcst-dot" style="background:${b.color || "#3B82F6"}"></div>
-              <div class="fcst-name">${b.name}</div>
-            </div>
-            <div class="fcst-metrics">
-              <div class="fcst-m-val ${colorClass}">${label}</div>
-              <div class="fcst-m-label">${sub}</div>
-            </div>
-          `;
-          list.appendChild(row);
-        });
-      }
       document
         .getElementById("btn-manual-toggle")
         .addEventListener("click", () => {
@@ -5286,7 +4631,7 @@
             notice.style.display = "none";
             if (renderer3D) renderer3D.domElement.style.cursor = "default";
           }
-          // Re-render so _draggableBoxes is populated/cleared based on new mode
+          // Re-render so _draggableSkus is populated/cleared based on new mode
           if (S.optimized && renderer3D) render3DLayout(true);
         });
 
@@ -5347,25 +4692,19 @@
         S.totalWeight = 0;
         S.occupancy = [];
         S.optimized = false;
-        S.palletsData = [];
-        S.activePalletIdx = 0;
+        S.boxesData = [];
+        S.activeBoxIdx = 0;
         _dragHistory = [];
         _lastDragSnapshot = null;
         _originalLayout = null;
         _updateRevertButtons();
         document.getElementById("vis-empty").style.display = "flex";
         document.getElementById("three-container").style.display = "none";
-        document.getElementById("sum-eff").textContent = "—";
-        document.getElementById("sum-pallets").textContent = "—";
-        const effList = document.getElementById("pallet-eff-list");
-        if (effList)
-          effList.innerHTML =
-            '<div class="fcst-empty">Run optimization to see efficiency</div>';
-        const fcastList = document.getElementById("fcst-list");
-        if (fcastList)
-          fcastList.innerHTML =
-            '<div class="fcst-empty">Run optimization to see forecast</div>';
-        const tabsBar = document.getElementById("pallet-tabs-bar");
+        const seEl = document.getElementById("sum-eff");
+        if (seEl) seEl.textContent = "—";
+        const sbEl = document.getElementById("sum-boxes");
+        if (sbEl) sbEl.textContent = "—";
+        const tabsBar = document.getElementById("box-tabs-bar");
         if (tabsBar) {
           tabsBar.style.display = "none";
           tabsBar.innerHTML = "";
@@ -5378,8 +4717,6 @@
         }
 
         updateSummary();
-        renderPalletEfficiency();
-        renderForecast();
       });
 
       // ─── UTIL ────────────────────────────────────
@@ -5392,7 +4729,7 @@
 
       // ─── INIT ────────────────────────────────────
       fetchSettings();
-      initBoxList();
+      initSkuList();
       updateSummary();
       // Defer 3D init until layout is fully painted
       setTimeout(window.init3D, 200);

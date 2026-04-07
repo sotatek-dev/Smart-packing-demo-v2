@@ -827,6 +827,27 @@
         opacity: 0.6;
       }
 
+      .metric-card {
+        text-align: right;
+      }
+
+      .metric-value {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-primary);
+        font-family: var(--mono);
+        line-height: 1.1;
+      }
+
+      .metric-label {
+        font-size: 9px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 2px;
+      }
+
       /* SKU rows */
       .sku-row {
         display: grid;
@@ -841,10 +862,10 @@
         transition: 0.15s;
       }
 
-      .sku-row:hover {
+      /* .sku-row:hover {
         border-color: var(--primary);
         box-shadow: var(--shadow-sm);
-      }
+      } */
 
       .sku-row.active {
         border-color: rgba(0, 102, 255, 0.35);
@@ -1097,6 +1118,155 @@
         font-size: 12px;
         color: var(--text-muted);
         margin-top: 2px;
+      }
+
+      /* ── RIGHT PANEL ── */
+      .right {
+        background: var(--bg-panel);
+        border-left: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .right-hd {
+        height: 64px;
+        padding: 0 18px;
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+      }
+
+      .right-hd h3 {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .right-scroll {
+        overflow-y: auto;
+        flex: 1;
+        padding: 16px 18px;
+      }
+
+      .right-scroll::-webkit-scrollbar {
+        width: 4px;
+      }
+
+      .right-scroll::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 2px;
+      }
+
+      .r-sec {
+        margin-bottom: 22px;
+      }
+
+      .r-sec-title {
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: var(--text-muted);
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .rp-card-title {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+      }
+
+      .rp-stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+
+      .rp-card {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px 16px;
+        background: var(--bg-panel);
+      }
+
+      .rp-card.compact {
+        padding: 12px 14px;
+      }
+
+      .rp-card-title {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+      }
+
+      .rp-card-value {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text-primary);
+        font-family: var(--mono);
+        display: flex;
+        align-items: baseline;
+        gap: 4px;
+      }
+
+      .rp-card-value.green {
+        color: var(--secondary);
+      }
+
+      .rp-card-unit {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-muted);
+        font-family: var(--sans);
+      }
+
+      .rp-card-sub {
+        font-size: 10px;
+        color: var(--text-muted);
+        margin-top: 3px;
+      }
+
+      .sku-summary-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        overflow-y: auto;
+      }
+
+      .sku-summary-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--text-primary);
+        padding: 5px 0;
+        border-bottom: 1px dashed var(--border);
+      }
+
+      .sku-color-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+
+      .r-sec-title::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border);
       }
 
       /* Empty state */
@@ -1659,7 +1829,7 @@
           </div>
           <div class="sec">
             <div class="sec-title">
-              <span>Select SKU Types & Quantities</span>
+              <span>Select Item</span>
             </div>
             <div id="sku-list"></div>
           </div>
@@ -1701,7 +1871,7 @@
           >
             <div class="metric-card">
               <div class="metric-value" id="sum-skus">—</div>
-              <div class="metric-label">TOTAL SKUS</div>
+              <div class="metric-label">TOTAL Items</div>
             </div>
             <div class="metric-card">
               <div class="metric-value" id="sum-boxes">—</div>
@@ -1710,6 +1880,10 @@
             <div class="metric-card">
               <div class="metric-value" id="sum-eff">—</div>
               <div class="metric-label">TOTAL WEIGHT (KG)</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value" id="header-total-cost">—</div>
+              <div class="metric-label">TOTAL COST ($)</div>
             </div>
           </div>
         </div>
@@ -1907,6 +2081,61 @@
               Select a box and SKU types, then click
               <strong style="color: var(--primary)">Optimize Layout</strong> to
               generate the preview
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Analytics -->
+      <div class="right" id="right-panel" style="display: none">
+        <div class="right-hd">
+          <h3>Boxs Analytics</h3>
+        </div>
+        <div class="right-scroll">
+          <div
+            style="
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              overflow: hidden;
+              border: none;
+              background: transparent;
+            "
+          >
+            <div class="rp-stats-grid">
+              <div class="rp-card compact">
+                <div class="rp-card-title">Total Weight</div>
+                <div class="rp-card-value">
+                  <span id="rp-weight">—</span
+                  ><span class="rp-card-unit" style="margin-left: 2px">kg</span>
+                </div>
+                <div class="rp-card-sub">Items inside</div>
+              </div>
+              <div class="rp-card compact">
+                <div class="rp-card-title">Used Space</div>
+                <div class="rp-card-value green">
+                  <span id="rp-eff">—</span><span class="rp-card-unit">%</span>
+                </div>
+                <div class="rp-card-sub">Of capacity</div>
+              </div>
+            </div>
+            <div class="rp-card-title" style="margin-bottom: 0">
+              Packed Items
+            </div>
+            <div
+              id="sku-summary"
+              class="sku-summary-list"
+              style="overflow: hidden; flex: 1"
+            >
+              <div
+                style="
+                  font-size: 12px;
+                  color: var(--text-muted);
+                  padding: 12px 0;
+                "
+              >
+                Optimization pending...
+              </div>
             </div>
           </div>
         </div>
@@ -2191,18 +2420,17 @@
         if (!p) return;
 
         const item = drag3D.item;
-        const hw = p.width / 2;
-        const hl = p.length / 2;
 
-        // Raw world XZ clamped to box
+        // Corner-based: world X maps directly to grid X — no hw/hl offset needed.
+        // Clamp so SKU stays fully inside [0, boxWidth] x [0, boxLength].
         let nx = _intersect3D.x - drag3D.offset.x;
         let nz = _intersect3D.z - drag3D.offset.z;
-        nx = Math.max(-hw + item.w / 2, Math.min(hw - item.w / 2, nx));
-        nz = Math.max(-hl + item.d / 2, Math.min(hl - item.d / 2, nz));
+        nx = Math.max(item.w / 2, Math.min(p.width - item.w / 2, nx));
+        nz = Math.max(item.d / 2, Math.min(p.length - item.d / 2, nz));
 
-        // Convert to grid coords
-        const dropX = Math.round(nx + hw - item.w / 2);
-        const dropY = Math.round(nz + hl - item.d / 2);
+        // Convert world center to grid corner
+        const dropX = Math.round(nx - item.w / 2);
+        const dropY = Math.round(nz - item.d / 2);
 
         // Find closest valid snapped position in real-time
         const best = findClosestFreePosition(
@@ -2217,14 +2445,12 @@
         // Store for pointerUp so it uses the same snapped result
         drag3D.pendingDrop = best;
 
-        // Show snapped preview position (snapped world coords)
-        const snapWorldX = best.x + item.w / 2 - hw;
-        const snapWorldZ = best.y + item.d / 2 - hl;
-        drag3D.mesh.position.x = snapWorldX;
+        // Snap mesh to grid position (corner-based: mesh center = grid corner + half-dims)
+        drag3D.mesh.position.x = best.x + item.w / 2;
         drag3D.mesh.position.y = best.z + item.h / 2 + 2; // small hover gap
-        drag3D.mesh.position.z = snapWorldZ;
-        if (drag3D.edgeMesh)
-          drag3D.edgeMesh.position.copy(drag3D.mesh.position);
+        drag3D.mesh.position.z = best.y + item.d / 2;
+        // if (drag3D.edgeMesh)
+        //   drag3D.edgeMesh.position.copy(drag3D.mesh.position);
       }
 
       // ── Find the closest collision-free anchor position to the drop point ──
@@ -2240,15 +2466,18 @@
 
         function clamp(cx, cy) {
           return {
-            x: Math.round(Math.max(0, Math.min(cx, boxW - item.w))),
-            y: Math.round(Math.max(0, Math.min(cy, boxL - item.d))),
+            x: Math.max(0, Math.min(cx, boxW - item.w)),
+            y: Math.max(0, Math.min(cy, boxL - item.d)),
           };
         }
 
         function collidesAt(cx, cy, atZ) {
           return S.layout.some((other) => {
             if (other.id === excludeId) return false;
-            if (Math.abs(other.z - atZ) > 0.1) return false;
+
+            // Slightly relaxed tolerance for float precision
+            if (Math.abs(other.z - atZ) > 0.5) return false;
+
             return !(
               cx >= other.x + other.w ||
               cx + item.w <= other.x ||
@@ -2258,18 +2487,20 @@
           });
         }
 
-        // Anchor X and Y values — box walls + neighbour edges only (NOT the raw drop)
+        // Anchor positions (walls + neighbour edges)
         const xAnchors = [0, boxW - item.w];
         const yAnchors = [0, boxL - item.d];
 
         S.layout.forEach((other) => {
           if (other.id === excludeId) return;
+
           xAnchors.push(
             other.x,
             other.x + other.w,
             other.x - item.w,
             other.x + other.w - item.w,
           );
+
           yAnchors.push(
             other.y,
             other.y + other.d,
@@ -2278,29 +2509,36 @@
           );
         });
 
-        // All anchor combinations
-        const candidates = [];
-        xAnchors.forEach((ax) =>
-          yAnchors.forEach((ay) => candidates.push(clamp(ax, ay))),
-        );
+        // Remove duplicate anchors
+        const uniqueX = [...new Set(xAnchors)];
+        const uniqueY = [...new Set(yAnchors)];
 
-        // Find the closest valid anchor
+        const candidates = [];
+        uniqueX.forEach((ax) => {
+          uniqueY.forEach((ay) => {
+            candidates.push(clamp(ax, ay));
+          });
+        });
+
         let best = null;
         let bestDist = Infinity;
 
         candidates.forEach((c) => {
           const cz = getStackHeight(c.x, c.y, item.w, item.d, excludeId);
           if (collidesAt(c.x, c.y, cz)) return;
-          const dx = c.x + item.w / 2 - (dropX + item.w / 2);
-          const dy = c.y + item.d / 2 - (dropY + item.d / 2);
-          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          // Distance from drop center
+          const dx = c.x - dropX;
+          const dy = c.y - dropY;
+          const dist = dx * dx + dy * dy; // squared distance (faster & stable)
+
           if (dist < bestDist) {
             bestDist = dist;
             best = { x: c.x, y: c.y, z: cz };
           }
         });
 
-        // Fallback: if no anchor found, stay at drop position
+        // Fallback: stay near drop position
         if (!best) {
           const fb = clamp(dropX, dropY);
           return {
@@ -2309,6 +2547,7 @@
             z: getStackHeight(fb.x, fb.y, item.w, item.d, excludeId),
           };
         }
+
         return best;
       }
 
@@ -2324,15 +2563,14 @@
         }
 
         const item = drag3D.item;
-        const hw = p.width / 2;
-        const hl = p.length / 2;
 
         // Use the snapped position already computed in the last pointermove
         const best =
           drag3D.pendingDrop ||
           (() => {
-            const rawX = drag3D.mesh.position.x + hw - item.w / 2;
-            const rawY = drag3D.mesh.position.z + hl - item.d / 2;
+            // Fallback: derive grid position from current mesh position (corner-based)
+            const rawX = drag3D.mesh.position.x - item.w / 2;
+            const rawY = drag3D.mesh.position.z - item.d / 2;
             const dx = Math.round(
               Math.max(0, Math.min(rawX, p.width - item.w)),
             );
@@ -2373,12 +2611,12 @@
         );
         item.layer = layerFloors.indexOf(best.z) + 1 || layerFloors.length + 1;
 
-        // Snap mesh visually
-        drag3D.mesh.position.x = best.x + item.w / 2 - hw;
+        // Snap mesh visually (corner-based: mesh center = grid corner + half-dims)
+        drag3D.mesh.position.x = best.x + item.w / 2;
         drag3D.mesh.position.y = best.z + item.h / 2;
-        drag3D.mesh.position.z = best.y + item.d / 2 - hl;
-        if (drag3D.edgeMesh)
-          drag3D.edgeMesh.position.copy(drag3D.mesh.position);
+        drag3D.mesh.position.z = best.y + item.d / 2;
+        // if (drag3D.edgeMesh)
+        //   drag3D.edgeMesh.position.copy(drag3D.mesh.position);
 
         // Reset material before rebuilding
         if (drag3D.mesh && drag3D.mesh.material) {
@@ -2401,8 +2639,8 @@
       function restoreDragSku() {
         if (drag3D.mesh && drag3D.originalPos) {
           drag3D.mesh.position.copy(drag3D.originalPos);
-          if (drag3D.edgeMesh)
-            drag3D.edgeMesh.position.copy(drag3D.originalPos);
+          // if (drag3D.edgeMesh)
+          //   drag3D.edgeMesh.position.copy(drag3D.originalPos);
         }
         if (controls3D) controls3D.enabled = true;
         drag3D.mesh = null;
@@ -2450,11 +2688,7 @@
         item.h = nh;
 
         // Rebuild the mesh geometry with new dimensions
-        const bw = Math.max(0.5, nw - 0.4);
-        const bh = Math.max(0.5, nh - 0.4);
-        const bd = Math.max(0.5, nd - 0.4);
-
-        const newGeo = new THREE.BoxGeometry(bw, bh, bd);
+        const newGeo = new THREE.BoxGeometry(nw, nh, nd);
 
         // Swap geometry on the mesh
         drag3D.mesh.geometry.dispose();
@@ -2467,15 +2701,14 @@
         }
 
         // Recompute pendingDrop with new dimensions so snap is immediately updated
-        const hw = p.width / 2,
-          hl = p.length / 2;
         const currX = drag3D.mesh.position.x;
         const currZ = drag3D.mesh.position.z;
+        // Convert mesh center to grid corner (corner-based)
         const dropX = Math.round(
-          Math.max(0, Math.min(currX + hw - nw / 2, p.width - nw)),
+          Math.max(0, Math.min(currX - nw / 2, p.width - nw)),
         );
         const dropY = Math.round(
-          Math.max(0, Math.min(currZ + hl - nd / 2, p.length - nd)),
+          Math.max(0, Math.min(currZ - nd / 2, p.length - nd)),
         );
         const best = findClosestFreePosition(
           dropX,
@@ -2487,12 +2720,12 @@
         );
         drag3D.pendingDrop = best;
 
-        // Move mesh to snapped preview position
-        drag3D.mesh.position.x = best.x + nw / 2 - hw;
+        // Move mesh to snapped preview position (corner-based)
+        drag3D.mesh.position.x = best.x + nw / 2;
         drag3D.mesh.position.y = best.z + nh / 2 + 2;
-        drag3D.mesh.position.z = best.y + nd / 2 - hl;
-        if (drag3D.edgeMesh)
-          drag3D.edgeMesh.position.copy(drag3D.mesh.position);
+        drag3D.mesh.position.z = best.y + nd / 2;
+        // if (drag3D.edgeMesh)
+        //   drag3D.edgeMesh.position.copy(drag3D.mesh.position);
 
         // Show toast with current orientation
         showToast(
@@ -2567,14 +2800,13 @@
           palletGroup.add(palletGrp);
           curOffsetX += p.width + GAP;
 
-          // Box base
+          // Corner-based: box corner at palletGrp local origin (x=0, z=0).
+          // Base center sits at (width/2, -2, length/2).
           const palletBase = new THREE.Mesh(
             new THREE.BoxGeometry(p.width, 4, p.length),
             new THREE.MeshLambertMaterial({ color: 0xb0b8c8 }),
           );
-          palletBase.position.y = -2;
-          palletBase.position.x = p.width / 2;
-          palletBase.position.z = p.length / 2;
+          palletBase.position.set(p.width / 2, -2, p.length / 2);
           palletGrp.add(palletBase);
 
           // Bounds wireframe
@@ -2591,9 +2823,7 @@
                 opacity: 0.2,
               }),
             );
-            line.position.x = p.width / 2;
-            line.position.y = refH / 2;
-            line.position.z = p.length / 2;
+            line.position.set(p.width / 2, refH / 2, p.length / 2);
             palletGrp.add(line);
           }
 
@@ -2626,7 +2856,11 @@
                 depthWrite: false,
               }),
             );
-            labelMesh.position.set(0, (refH || pd.actualHeight || 50) + 30, 0);
+            labelMesh.position.set(
+              p.width / 2,
+              (refH || pd.actualHeight || 50) + 30,
+              p.length / 2,
+            );
             labelMesh.rotation.x = -Math.PI / 8;
             palletGrp.add(labelMesh);
           }
@@ -2645,6 +2879,7 @@
 
             const boxMesh = new THREE.Mesh(boxGeom, boxMat);
 
+            // Corner-based: mesh center = item corner + half-dims (no hw/hl offset)
             boxMesh.position.x = item.x + item.w / 2;
             boxMesh.position.y = item.z + item.h / 2;
             boxMesh.position.z = item.y + item.d / 2;
@@ -2675,8 +2910,8 @@
             S.actualHeight || _fallbackP?.height || _fallbackP?.length || 160;
           const centerX = totalRenderWidth / 2 - _fallbackP.width / 2;
           const dist =
-            Math.max(totalRenderWidth, _fallbackP.length, refH) * 1.5;
-          camera3D.position.set(centerX, dist * 0.7, dist);
+            Math.max(totalRenderWidth, _fallbackP.length, refH, 50) * 1.5;
+          camera3D.position.set(centerX + 1, dist * 0.7, dist);
           if (controls3D) {
             controls3D.target.set(centerX, refH / 3, 0);
             controls3D.update();
@@ -2693,84 +2928,134 @@
       const DEFAULT_DATA = {
         boxes: [
           {
-            id: "p1",
-            name: "Standard EUR Box",
-            type: "EUR",
-            width: 80,
-            length: 120,
-            height: 160,
-            weight: 1500,
+            id: "C02P",
+            name: "2 Pack POD Self Locking",
+            type: "C02P",
+            width: 8.9,
+            length: 14.2,
+            height: 11,
+            weight: 0.28,
             active: true,
           },
           {
-            id: "p2",
-            name: "US Standard Box",
-            type: "GMA",
-            width: 101.6,
-            length: 121.9,
-            height: 200,
-            weight: 2000,
+            id: "C04P",
+            name: "4 Pack POD Self Locking",
+            type: "C04P",
+            width: 14.2,
+            length: 17.3,
+            height: 11,
+            weight: 0.54,
             active: true,
           },
           {
-            id: "p3",
-            name: "Half Box",
-            type: "EUR",
-            width: 80,
-            length: 60,
-            height: 160,
-            weight: 750,
+            id: "C06P",
+            name: "6 Pack POD Self Locking",
+            type: "C06P",
+            width: 16.4,
+            length: 22.8,
+            height: 11,
+            weight: 0.82,
+            active: true,
+          },
+          {
+            id: "C10P",
+            name: "10 Pack POD Self Locking",
+            type: "C10P",
+            width: 16.4,
+            length: 34.5,
+            height: 11,
+            weight: 1.24,
+            active: true,
+          },
+          {
+            id: "C15P",
+            name: "15 Pack POD Self Locking",
+            type: "C15P",
+            width: 23.9,
+            length: 36.3,
+            height: 11,
+            weight: 1.91,
+            active: true,
+          },
+          {
+            id: "C25R",
+            name: "25 Pack POD RSC",
+            type: "C25R",
+            width: 33.4,
+            length: 38.9,
+            height: 11,
+            weight: 2.86,
+            active: true,
+          },
+          {
+            id: "C50R",
+            name: "50 Pack POD RSC",
+            type: "C50R",
+            width: 33.4,
+            length: 38.9,
+            height: 19.3,
+            weight: 5.02,
+            active: true,
+          },
+          {
+            id: "C40R",
+            name: "40 Pack POD RSC",
+            type: "C40R",
+            width: 27,
+            length: 38.9,
+            height: 19.3,
+            weight: 4.05,
             active: true,
           },
         ],
         skus: [
           {
-            sku_id: "b1",
-            name: "2-Pack Small",
-            width: 14,
-            length: 9,
-            height: 11,
+            sku_id: "T2N651",
+            name: "T2N651",
+            width: 7.62,
+            length: 9.65,
+            height: 7.62,
             weight: 0.42,
             color: "#3B82F6",
             active: true,
           },
           {
-            sku_id: "b2",
-            name: "4-Pack Medium",
-            width: 18,
-            length: 13,
-            height: 11,
-            weight: 0.85,
+            sku_id: "TW2R42500",
+            name: "TW2R42500",
+            width: 7.49,
+            length: 8.61,
+            height: 6.4,
+            weight: 0.54,
             color: "#10B981",
             active: true,
           },
           {
-            sku_id: "b3",
-            name: "6-Pack Standard",
-            width: 23,
-            length: 15,
+            sku_id: "TW2W99600VQ",
+            name: "TW2W99600VQ",
+            width: 10.39,
+            length: 10.59,
             height: 12,
-            weight: 1.25,
+            weight: 0.22,
             color: "#F59E0B",
             active: true,
           },
           {
-            sku_id: "b4",
-            name: "10-Pack Distribution",
-            width: 35,
-            length: 25,
-            height: 15,
-            weight: 2.5,
+            sku_id: "TW2R63100",
+            name: "TW2R63100",
+            width: 10.01,
+            length: 3.99,
+            height: 6,
+            weight: 0.046,
             color: "#EF4444",
             active: true,
           },
           {
-            sku_id: "b5",
-            name: "25-Pack Bulk",
-            width: 45,
-            length: 35,
-            height: 25,
-            weight: 5.8,
+            sku_id: "T2P370",
+            name: "T2P370",
+            width: 3.1,
+            length: 19.1,
+            height: 0.79,
+            weight: 0.318,
             color: "#8B5CF6",
             active: true,
           },
@@ -3266,25 +3551,12 @@
           .map((b) => {
             const id = b.sku_id || b.id;
             const skuColor = b.color || "#3B82F6";
-            let placed;
-            if (S.activeBoxIdx === -1 && S.boxesData && S.boxesData.length) {
-              placed = S.boxesData.reduce(
-                (sum, pd) => sum + (pd.placedQty[id] || 0),
-                0,
-              );
-            } else {
-              placed = S.placedQty[id] || 0;
-            }
-            const requested = S.qty[id] || 0;
-            const isShort = S.optimized && requested > placed;
-
             return `
-                    <div class="sku-row${S.qty[id] > 0 ? " active" : ""}${isShort ? " short" : ""}" id="row-${id}">
+                    <div class="sku-row${S.qty[id] > 0 ? " active" : ""}" id="row-${id}">
                       <div class="sku-dot" style="background:${skuColor}"></div>
                       <div class="sku-info">
                         <div class="sku-name">${b.name}</div>
                         <div class="sku-dim">${b.width}×${b.length}×${b.height}cm · ${b.weight}kg</div>
-                        ${S.optimized && requested > 0 ? `<div class="sku-status ${isShort ? "text-red" : "text-green"}">${placed} / ${requested} placed</div>` : ""}
                       </div>
                       <div class="qty-ctrl">
                         <button class="qty-b" data-id="${id}" data-d="-1">−</button>
@@ -3334,31 +3606,6 @@
           S.boxesData && S.boxesData.length
             ? S.boxesData[Math.max(0, S.activeBoxIdx)]
             : null;
-        if (!activePd && !viewAll) return;
-        settingsData.skus
-          .filter((b) => b.active)
-          .forEach((b) => {
-            const id = b.sku_id || b.id;
-            const r = document.getElementById("row-" + id);
-            if (!r) return;
-            const statusEl = r.querySelector(".sku-status");
-            if (!statusEl) return;
-            const placed = viewAll
-              ? S.boxesData.reduce(
-                  (sum, pd) => sum + (pd.placedQty[id] || 0),
-                  0,
-                )
-              : activePd.placedQty[id] || 0;
-            const requested = S.qty[id] || 0;
-            const isShort = requested > placed;
-            statusEl.textContent = `${placed} / ${requested} placed`;
-            statusEl.className =
-              "sku-status " + (isShort ? "text-red" : "text-green");
-            r.className =
-              "sku-row" +
-              (requested > 0 ? " active" : "") +
-              (isShort ? " short" : "");
-          });
       }
 
       // ─── CONFIG PANEL ───────────────────────────
@@ -3433,6 +3680,92 @@
           0,
         );
         document.getElementById("sum-eff").textContent = totalWeight.toFixed(1);
+      }
+
+      function updateStats() {
+        if (!S.boxesData || !S.boxesData.length) return;
+
+        const group = S.boxesData[S.activeBoxIdx];
+        if (!group) return;
+
+        const box = settingsData.boxes.find((x) => x.id === group.boxId);
+        if (!box) return;
+
+        // ───── Volume Efficiency ─────
+        let usedVolume = 0;
+
+        group.layout.forEach((it) => {
+          usedVolume += it.w * it.d * it.h;
+        });
+
+        const totalVolume = box.width * box.length * box.height;
+
+        const efficiency =
+          totalVolume > 0 ? (usedVolume / totalVolume) * 100 : 0;
+
+        const effEl = document.getElementById("rp-eff");
+        if (effEl) effEl.textContent = Math.round(efficiency);
+
+        // ───── Weight ─────
+        // Use precomputed totalWeight if available (more accurate)
+        const localWeight =
+          group.totalWeight !== undefined
+            ? group.totalWeight
+            : group.layout.reduce((sum, it) => sum + (it.kg || 0), 0);
+
+        const weightEl = document.getElementById("rp-weight");
+        if (weightEl) weightEl.textContent = localWeight.toFixed(3);
+
+        // // ───── Global Header Metrics ─────
+        // const totalCost = globalWeight * globalCostPerKg;
+
+        // const elWeight = document.getElementById("header-total-weight");
+        // if (elWeight) elWeight.textContent = globalWeight.toFixed(2);
+
+        // const elCost = document.getElementById("header-total-cost");
+        // if (elCost) {
+        //   elCost.textContent = totalCost.toLocaleString(undefined, {
+        //     minimumFractionDigits: 2,
+        //     maximumFractionDigits: 2,
+        //   });
+        // }
+      }
+
+      // Update SKU list in the right panel for the active container group
+      function updateSKUPlaced() {
+        const summaryEl = document.getElementById("sku-summary");
+        if (!summaryEl || !S.boxesData || !S.boxesData.length) return;
+
+        const group = S.boxesData[S.activeBoxIdx];
+        if (!group || !group.layout) return;
+
+        const counts = {};
+
+        group.layout.forEach((it) => {
+          counts[it.type] = (counts[it.type] || 0) + 1;
+        });
+
+        let html = "";
+
+        settingsData.skus.forEach((sku) => {
+          const placed = counts[sku.sku_id] || 0;
+
+          if (placed > 0) {
+            html += `
+        <div class="sku-summary-item">
+          <div class="sku-color-dot" style="background: ${sku.color}"></div>
+          <div style="flex:1; font-weight:600;">${sku.name}</div>
+          <div style="font-family:var(--mono); color:var(--primary); font-weight:700;">
+            x${placed}
+          </div>
+        </div>
+      `;
+          }
+        });
+
+        summaryEl.innerHTML =
+          html ||
+          '<div style="font-size:12px; color:var(--text-muted)">No items in this box</div>';
       }
 
       // ─── PACKING ENGINE ────────────────
@@ -4054,6 +4387,18 @@
           // Fewer boxes than before — select last box in array
           S.activeBoxIdx = newBoxCount - 1;
         }
+
+        // Show/hide Pallet Analytics panel and update grid
+        const rp = document.getElementById("right-panel");
+        const ag = document.querySelector(".app");
+        if (S.activeBoxIdx === -1) {
+          if (rp) rp.style.display = "none";
+          if (ag) ag.style.gridTemplateColumns = "380px 1fr";
+        } else {
+          if (rp) rp.style.display = "";
+          if (ag) ag.style.gridTemplateColumns = "380px 1fr 300px";
+        }
+
         // else: keep current S.activeBoxIdx as-is
         S.boxesData_prev = S.boxesData.map((pd) => ({ ...pd }));
         _syncActiveBox();
@@ -4067,6 +4412,8 @@
         renderLayout();
         computeEfficiency();
         updateSummary();
+        updateStats();
+        updateSKUPlaced();
         initSkuList();
         renderBoxTabs();
 
@@ -4132,8 +4479,17 @@
             renderBoxTabs();
             computeEfficiency();
             updateSummary();
+            updateStats();
+            updateSKUPlaced();
             refreshSkuStatus();
             render3DLayout();
+
+            // Show Pallet Analytics panel and recalculate 3D
+            const rp = document.getElementById("right-panel");
+            const ag = document.querySelector(".app");
+            if (rp) rp.style.display = "";
+            if (ag) ag.style.gridTemplateColumns = "380px 1fr 300px";
+
             setTimeout(() => {
               if (renderer3D) render3DLayout();
             }, 50);
@@ -4152,6 +4508,13 @@
           render3DLayout();
           initSkuList();
           refreshSkuStatus();
+
+          // Hide Pallet Analytics panel and expand 3D
+          const rp = document.getElementById("right-panel");
+          const ag = document.querySelector(".app");
+          if (rp) rp.style.display = "none";
+          if (ag) ag.style.gridTemplateColumns = "380px 1fr";
+
           setTimeout(() => {
             if (renderer3D) render3DLayout();
           }, 50);

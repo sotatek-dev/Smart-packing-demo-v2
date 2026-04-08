@@ -1882,6 +1882,10 @@
               <div class="metric-label">TOTAL WEIGHT (KG)</div>
             </div>
             <div class="metric-card">
+              <div class="metric-value" id="sum-space-eff">—</div>
+              <div class="metric-label">SPACE EFFICIENCY (%)</div>
+            </div>
+            <div class="metric-card">
               <div class="metric-value" id="header-total-cost">—</div>
               <div class="metric-label">TOTAL COST ($)</div>
             </div>
@@ -3886,6 +3890,8 @@
       function computeEfficiency() {
         if (!S.boxesData || !S.boxesData.length) {
           document.getElementById("sum-eff").textContent = "—";
+          const se = document.getElementById("sum-space-eff");
+          if (se) se.textContent = "—";
           return;
         }
         const totalWeight = S.boxesData.reduce((sum, pd) => {
@@ -3893,6 +3899,23 @@
           return sum + getTotalWeightWithBox(pd, boxDef);
         }, 0);
         document.getElementById("sum-eff").textContent = totalWeight.toFixed(3);
+
+        // ───── Total Space Efficiency (all boxes) ─────
+        const usedVolume = S.boxesData.reduce((sum, pd) => {
+          const layout = pd.layout || [];
+          return sum + layout.reduce((s, it) => s + it.w * it.d * it.h, 0);
+        }, 0);
+
+        const totalVolume = S.boxesData.reduce((sum, pd) => {
+          const boxDef = settingsData.boxes.find((x) => x.id === pd.boxId);
+          if (!boxDef) return sum;
+          return sum + boxDef.width * boxDef.height * boxDef.length;
+        }, 0);
+
+        const spaceEffPct =
+          totalVolume > 0 ? (usedVolume / totalVolume) * 100 : 0;
+        const spaceEl = document.getElementById("sum-space-eff");
+        if (spaceEl) spaceEl.textContent = Math.round(spaceEffPct).toString();
       }
 
       function updateStats() {
@@ -4279,6 +4302,48 @@
         return (box.length * box.width * box.height) / divisor;
       }
 
+      function calculateFreightCostForPackedBox(packedBox) {
+        const boxDim = packedBox.dimensions || {};
+        const itemsWeight = packedBox.items.reduce(
+          (s, i) => s + (i.weight || 0),
+          0,
+        );
+        const boxOwnWeight = boxDim.boxWeight || 0;
+        const totalWeightWithBox = itemsWeight + boxOwnWeight;
+
+        const volumetricWeight = getVolumetricWeight({
+          length: boxDim.depth,
+          width: boxDim.width,
+          height: boxDim.height,
+        });
+
+        const chargeableWeight = Math.max(totalWeightWithBox, volumetricWeight);
+        return chargeableWeight * FREIGHT_TARIFF_PER_KG;
+      }
+
+      function calculateChargeableWeightForPackedBox(packedBox) {
+        const boxDim = packedBox.dimensions || {};
+        const itemsWeight = packedBox.items.reduce(
+          (s, i) => s + (i.weight || 0),
+          0,
+        );
+        const boxOwnWeight = boxDim.boxWeight || 0;
+        const totalWeightWithBox = itemsWeight + boxOwnWeight;
+        const volumetricWeight = getVolumetricWeight({
+          length: boxDim.depth,
+          width: boxDim.width,
+          height: boxDim.height,
+        });
+        return Math.max(totalWeightWithBox, volumetricWeight);
+      }
+
+      function calculateTotalFreightCost(packedBoxes) {
+        return packedBoxes.reduce(
+          (sum, b) => sum + calculateFreightCostForPackedBox(b),
+          0,
+        );
+      }
+
       // ── Strategy 1: First-Fit Decreasing ──────────────────────────────────
       function packWithSmallestFirst(items, BOX_TYPES) {
         const boxes = [],
@@ -4291,9 +4356,9 @@
             if (res.items.length) {
               boxes.push(res);
               res.items.forEach((pi) => {
-                const i = remaining.findIndex((x) => x._uid === pi._uid);
-                if (i !== -1) remaining.splice(i, 1);
-              });
+              const i = remaining.findIndex((x) => x._uid === pi._uid);
+              if (i !== -1) remaining.splice(i, 1);
+            });
               packed = true;
               break;
             }
@@ -4393,33 +4458,123 @@
         return boxes;
       }
 
+      // ── Strategy 4: Minimize Total Chargeable Weight (Global) ─────────────
+      function packByMinChargeableWeight(items, BOX_TYPES) {
+        const BEAM_WIDTH = 4;
+        const startState = {
+          remaining: [...items],
+          boxes: [],
+          score: 0, // total chargeable weight
+          count: 0, // placed item count
+        };
+
+        let states = [startState];
+        let bestState = null;
+
+        const betterGlobal = (a, b) => {
+          if (a.count !== b.count) return a.count > b.count;
+          return a.score < b.score;
+        };
+        const beamCompare = (a, b) => {
+          if (a.score !== b.score) return a.score - b.score;
+          return b.count - a.count;
+        };
+
+        const maxIters = Math.max(1, items.length);
+        for (let iter = 0; iter < maxIters; iter++) {
+          const next = [];
+          let anyProgress = false;
+
+          for (const st of states) {
+            if (!st.remaining.length) {
+              next.push(st);
+              if (!bestState || betterGlobal(st, bestState)) bestState = st;
+              continue;
+            }
+
+            let generated = false;
+            for (const [type, dim] of Object.entries(BOX_TYPES)) {
+              const res = tryPackInBox(st.remaining, type, dim);
+              if (!res.items.length) continue;
+              generated = true;
+              anyProgress = true;
+
+              const packedIds = new Set(res.items.map((x) => x._uid));
+              const nextRemaining = st.remaining.filter(
+                (x) => !packedIds.has(x._uid),
+              );
+              next.push({
+                remaining: nextRemaining,
+                boxes: st.boxes.concat([res]),
+                score: st.score + calculateChargeableWeightForPackedBox(res),
+                count: st.count + res.items.length,
+              });
+            }
+
+            if (!generated) {
+              const res = forcePackLargest(st.remaining, BOX_TYPES);
+              if (res && res.items.length) {
+                anyProgress = true;
+                const packedIds = new Set(res.items.map((x) => x._uid));
+                const nextRemaining = st.remaining.filter(
+                  (x) => !packedIds.has(x._uid),
+                );
+                next.push({
+                  remaining: nextRemaining,
+                  boxes: st.boxes.concat([res]),
+                  score: st.score + calculateChargeableWeightForPackedBox(res),
+                  count: st.count + res.items.length,
+                });
+              }
+            }
+          }
+
+          if (!anyProgress || !next.length) break;
+          next.sort(beamCompare);
+          states = next.slice(0, BEAM_WIDTH);
+          for (const st of states) {
+            if (!bestState || betterGlobal(st, bestState)) bestState = st;
+          }
+        }
+
+        return bestState && bestState.boxes.length ? bestState.boxes : [];
+      }
+
       /**
        * packItemsIntoBoxes — MAIN ALGORITHM
        *
-       * Runs all 3 strategies, returns the result with minimum total
-       * container volume (= most space-efficient packing).
+       * Runs all 4 strategies and returns the best overall result.
        */
       function packItemsIntoBoxes(items, BOX_TYPES) {
         const strategies = [
           packWithSmallestFirst(items, BOX_TYPES),
           packWithMaxFill(items, BOX_TYPES),
           packBySimilarSize(items, BOX_TYPES),
+          packByMinChargeableWeight(items, BOX_TYPES),
         ];
 
         // Count total items placed by each strategy
         const countItems = (boxes) =>
           boxes.reduce((s, b) => s + b.items.length, 0);
 
-        // Primary: most items placed. Tiebreaker: least container volume.
+        // Primary: most items placed.
+        // Tiebreakers: lowest freight cost → least container volume.
         let best = strategies[0];
         let bestCount = countItems(strategies[0]);
+        let bestCost = calculateTotalFreightCost(strategies[0]);
         let bestVol = calculateTotalVolume(strategies[0]);
         for (let i = 1; i < strategies.length; i++) {
           const count = countItems(strategies[i]);
+          const cost = calculateTotalFreightCost(strategies[i]);
           const vol = calculateTotalVolume(strategies[i]);
-          if (count > bestCount || (count === bestCount && vol < bestVol)) {
+          if (
+            count > bestCount ||
+            (count === bestCount && cost < bestCost) ||
+            (count === bestCount && cost === bestCost && vol < bestVol)
+          ) {
             best = strategies[i];
             bestCount = count;
+            bestCost = cost;
             bestVol = vol;
           }
         }
@@ -4824,6 +4979,8 @@
         document.getElementById("three-container").style.display = "none";
         const seEl = document.getElementById("sum-eff");
         if (seEl) seEl.textContent = "—";
+        const spaceEl = document.getElementById("sum-space-eff");
+        if (spaceEl) spaceEl.textContent = "—";
         const sbEl = document.getElementById("sum-boxes");
         if (sbEl) sbEl.textContent = "—";
         const tabsBar = document.getElementById("box-tabs-bar");

@@ -2795,11 +2795,17 @@
         const worldUp = new THREE.Vector3(0, 1, 0);
         let side = new THREE.Vector3().crossVectors(d, worldUp);
         if (side.lengthSq() < 1e-6) {
-          side = new THREE.Vector3().crossVectors(d, new THREE.Vector3(0, 0, 1));
+          side = new THREE.Vector3().crossVectors(
+            d,
+            new THREE.Vector3(0, 0, 1),
+          );
         }
         side.normalize().multiplyScalar(headWidth);
         const back = d.clone().multiplyScalar(headLength);
-        const shaftGeom = new THREE.BufferGeometry().setFromPoints([start, end]);
+        const shaftGeom = new THREE.BufferGeometry().setFromPoints([
+          start,
+          end,
+        ]);
         const shaftMat = new THREE.LineBasicMaterial({
           color: 0xb8c1d1,
           transparent: true,
@@ -2959,7 +2965,10 @@
 
             // Minimal dimension callouts with arrow lines (single-box view only)
             if (!viewAll) {
-              const labelScale = Math.max(6, Math.min(p.width, p.length) * 0.45);
+              const labelScale = Math.max(
+                6,
+                Math.min(p.width, p.length) * 0.45,
+              );
               const wGuideY = 1.5;
               const wGuideZ = p.length + 6;
               const wLabel = createDimSprite(`${p.width} cm`);
@@ -3199,7 +3208,7 @@
             width: 7.62,
             length: 9.65,
             height: 7.62,
-            weight: 0.42,
+            weight: 0.045,
             color: "#3B82F6",
             active: true,
           },
@@ -3209,7 +3218,7 @@
             width: 7.49,
             length: 8.61,
             height: 6.4,
-            weight: 0.54,
+            weight: 0.054,
             color: "#10B981",
             active: true,
           },
@@ -3218,7 +3227,7 @@
             name: "TW2W99600VQ",
             width: 10.39,
             length: 10.59,
-            height: 12,
+            height: 7.8,
             weight: 0.22,
             color: "#F59E0B",
             active: true,
@@ -3229,7 +3238,7 @@
             width: 10.01,
             length: 3.99,
             height: 6,
-            weight: 0.046,
+            weight: 0.045,
             color: "#EF4444",
             active: true,
           },
@@ -3901,10 +3910,13 @@
           return sum + chargeableWeight * FREIGHT_TARIFF_PER_KG;
         }, 0);
         if (headerCostEl) {
-          headerCostEl.textContent = totalFreightCost.toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          });
+          headerCostEl.textContent = totalFreightCost.toLocaleString(
+            undefined,
+            {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            },
+          );
         }
 
         const group = S.boxesData[S.activeBoxIdx];
@@ -3948,7 +3960,6 @@
           const freightCost = chargeableWeight * FREIGHT_TARIFF_PER_KG;
           freightEl.textContent = freightCost.toFixed(2);
         }
-
       }
 
       // Update SKU list in the right panel for the active container group
@@ -4279,7 +4290,6 @@
             const res = tryPackInBox(remaining, type, dim);
             if (res.items.length) {
               boxes.push(res);
-              const usedW = res.items.reduce((s, i) => s + (i.weight || 0), 0);
               res.items.forEach((pi) => {
                 const i = remaining.findIndex((x) => x._uid === pi._uid);
                 if (i !== -1) remaining.splice(i, 1);
@@ -4292,7 +4302,6 @@
             const res = forcePackLargest(remaining, BOX_TYPES);
             if (res) {
               boxes.push(res);
-              const usedW = res.items.reduce((s, i) => s + (i.weight || 0), 0);
 
               const i = remaining.findIndex(
                 (x) => x._uid === res.items[0]._uid,
@@ -4325,10 +4334,6 @@
           }
           if (bestBox) {
             boxes.push(bestBox);
-            const usedW = bestBox.items.reduce(
-              (s, i) => s + (i.weight || 0),
-              0,
-            );
             bestBox.items.forEach((pi) => {
               const i = remaining.findIndex((x) => x._uid === pi._uid);
               if (i !== -1) remaining.splice(i, 1);
@@ -4337,7 +4342,6 @@
             const res = forcePackLargest(remaining, BOX_TYPES);
             if (res) {
               boxes.push(res);
-              const usedW = res.items.reduce((s, i) => s + (i.weight || 0), 0);
               const i = remaining.findIndex(
                 (x) => x._uid === res.items[0]._uid,
               );
@@ -4371,10 +4375,6 @@
           }
           if (bestBox && bestBox.items.length) {
             boxes.push(bestBox);
-            const usedW = bestBox.items.reduce(
-              (s, i) => s + (i.weight || 0),
-              0,
-            );
             bestBox.items.forEach((pi) => {
               const i = remaining.findIndex((x) => x._uid === pi._uid);
               if (i !== -1) remaining.splice(i, 1);
@@ -4383,7 +4383,6 @@
             const res = forcePackLargest(remaining, BOX_TYPES);
             if (res) {
               boxes.push(res);
-              const usedW = res.items.reduce((s, i) => s + (i.weight || 0), 0);
               const i = remaining.findIndex(
                 (x) => x._uid === res.items[0]._uid,
               );

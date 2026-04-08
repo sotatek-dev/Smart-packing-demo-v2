@@ -2118,6 +2118,22 @@
                 </div>
                 <div class="rp-card-sub">Of capacity</div>
               </div>
+              <div class="rp-card compact">
+                <div class="rp-card-title">Volumetric Weight</div>
+                <div class="rp-card-value">
+                  <span id="rp-vol-wt">—</span
+                  ><span class="rp-card-unit" style="margin-left: 2px">kg</span>
+                </div>
+                <div class="rp-card-sub">By box dimensions</div>
+              </div>
+              <div class="rp-card compact">
+                <div class="rp-card-title">Freight Cost</div>
+                <div class="rp-card-value green">
+                  <span id="rp-freight-cost">—</span
+                  ><span class="rp-card-unit" style="margin-left: 2px">$</span>
+                </div>
+                <div class="rp-card-sub" id="rp-freight-tariff">Tariff: —</div>
+              </div>
             </div>
             <div class="rp-card-title" style="margin-bottom: 0">
               Packed Items
@@ -2935,6 +2951,7 @@
             length: 14.2,
             height: 11,
             weight: 0.28,
+            loadLimit: 15,
             active: true,
           },
           {
@@ -2945,6 +2962,7 @@
             length: 17.3,
             height: 11,
             weight: 0.54,
+            loadLimit: 15,
             active: true,
           },
           {
@@ -2955,6 +2973,7 @@
             length: 22.8,
             height: 11,
             weight: 0.82,
+            loadLimit: 15,
             active: true,
           },
           {
@@ -2965,6 +2984,7 @@
             length: 34.5,
             height: 11,
             weight: 1.24,
+            loadLimit: 15,
             active: true,
           },
           {
@@ -2975,6 +2995,7 @@
             length: 36.3,
             height: 11,
             weight: 1.91,
+            loadLimit: 15,
             active: true,
           },
           {
@@ -2985,6 +3006,7 @@
             length: 38.9,
             height: 11,
             weight: 2.86,
+            loadLimit: 15,
             active: true,
           },
           {
@@ -2995,6 +3017,7 @@
             length: 38.9,
             height: 19.3,
             weight: 5.02,
+            loadLimit: 15,
             active: true,
           },
           {
@@ -3005,6 +3028,7 @@
             length: 38.9,
             height: 19.3,
             weight: 4.05,
+            loadLimit: 15,
             active: true,
           },
         ],
@@ -3198,8 +3222,12 @@
                             <input type="number" class="input-inline" value="${p.height || 160}" onchange="updateEntity('boxes', '${p.id}', 'height', parseFloat(this.value))">
                         </div>
                         <div class="field-group">
-                            <div class="field-label">Max Load (kg)</div>
+                            <div class="field-label">Weight (kg)</div>
                             <input type="number" class="input-inline" value="${p.weight}" onchange="updateEntity('boxes', '${p.id}', 'weight', parseFloat(this.value))">
+                        </div>
+                        <div class="field-group">
+                            <div class="field-label">Max Load (kg)</div>
+                            <input type="number" class="input-inline" value="${p.loadLimit}" onchange="updateEntity('boxes', '${p.id}', 'loadLimit', parseFloat(this.value))">
                         </div>
                     </div>
                     <div class="card-footer">
@@ -3522,7 +3550,11 @@
         boxesData: [], // array of { layout, layerDefs, totalWeight, actualHeight, placedQty }
         activeBoxIdx: 0, // which box is currently focused in the right panel
       };
+      const FREIGHT_TARIFF_PER_KG = 8;
       window.S = S; // Expose for 3D script
+      const freightTariffEl = document.getElementById("rp-freight-tariff");
+      if (freightTariffEl)
+        freightTariffEl.textContent = `Tariff: ${FREIGHT_TARIFF_PER_KG} $/kg`;
 
       // ─── BOX LIST ───────────────────────────────
       function initSkuList() {
@@ -3640,7 +3672,7 @@
               </div>
               <div class="deck-spec">
                 <svg class="spec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
-                Max weight ${p.weight.toLocaleString()}kg
+                Max load ${p.loadLimit.toLocaleString()}kg
               </div>
             </div>
           </div>
@@ -3651,18 +3683,9 @@
 
       // ─── SUMMARY ────────────────────────────────
       function updateSummary() {
-        let skuCount = 0,
-          types = 0;
+        let skuCount = 0;
         if (S.optimized) {
-          // Aggregate across all boxes
-          const allPlacedQty = {};
-          S.boxesData.forEach((pd) => {
-            pd.layout.forEach((item) => {
-              allPlacedQty[item.type] = (allPlacedQty[item.type] || 0) + 1;
-            });
-          });
           skuCount = S.boxesData.reduce((s, pd) => s + pd.layout.length, 0);
-          types = Object.keys(allPlacedQty).length;
         }
         document.getElementById("sum-skus").textContent = skuCount;
         document.getElementById("sum-boxes").textContent = S.optimized
@@ -3670,20 +3693,59 @@
           : "—";
         if (S.optimized) computeEfficiency();
       }
+
+      function getPackedItemWeight(pd) {
+        return pd.totalWeight !== undefined
+          ? pd.totalWeight
+          : (pd.layout || []).reduce((sum, it) => sum + (it.kg || 0), 0);
+      }
+
+      function getBoxOwnWeight(boxDef) {
+        return boxDef ? boxDef.weight || 0 : 0;
+      }
+
+      function getTotalWeightWithBox(pd, boxDef) {
+        return getPackedItemWeight(pd) + getBoxOwnWeight(boxDef);
+      }
+
+      function getChargeableWeight(pd, boxDef) {
+        const totalWeightWithBox = getTotalWeightWithBox(pd, boxDef);
+        const volumetricWeight = getVolumetricWeight(boxDef);
+        return Math.max(totalWeightWithBox, volumetricWeight);
+      }
+
       function computeEfficiency() {
         if (!S.boxesData || !S.boxesData.length) {
           document.getElementById("sum-eff").textContent = "—";
           return;
         }
-        const totalWeight = S.boxesData.reduce(
-          (sum, pd) => sum + (pd.totalWeight || 0),
-          0,
-        );
-        document.getElementById("sum-eff").textContent = totalWeight.toFixed(1);
+        const totalWeight = S.boxesData.reduce((sum, pd) => {
+          const boxDef = settingsData.boxes.find((x) => x.id === pd.boxId);
+          return sum + getTotalWeightWithBox(pd, boxDef);
+        }, 0);
+        document.getElementById("sum-eff").textContent = totalWeight.toFixed(3);
       }
 
       function updateStats() {
-        if (!S.boxesData || !S.boxesData.length) return;
+        const headerCostEl = document.getElementById("header-total-cost");
+        if (!S.boxesData || !S.boxesData.length) {
+          if (headerCostEl) headerCostEl.textContent = "—";
+          return;
+        }
+
+        // ───── Global Header Freight Cost (all packed boxes) ─────
+        const totalFreightCost = S.boxesData.reduce((sum, pd) => {
+          const boxDef = settingsData.boxes.find((x) => x.id === pd.boxId);
+          if (!boxDef) return sum;
+          const chargeableWeight = getChargeableWeight(pd, boxDef);
+          return sum + chargeableWeight * FREIGHT_TARIFF_PER_KG;
+        }, 0);
+        if (headerCostEl) {
+          headerCostEl.textContent = totalFreightCost.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          });
+        }
 
         const group = S.boxesData[S.activeBoxIdx];
         if (!group) return;
@@ -3708,27 +3770,25 @@
 
         // ───── Weight ─────
         // Use precomputed totalWeight if available (more accurate)
-        const localWeight =
-          group.totalWeight !== undefined
-            ? group.totalWeight
-            : group.layout.reduce((sum, it) => sum + (it.kg || 0), 0);
+        const localWeightWithBox = getTotalWeightWithBox(group, box);
 
         const weightEl = document.getElementById("rp-weight");
-        if (weightEl) weightEl.textContent = localWeight.toFixed(3);
+        if (weightEl) weightEl.textContent = localWeightWithBox.toFixed(3);
 
-        // // ───── Global Header Metrics ─────
-        // const totalCost = globalWeight * globalCostPerKg;
+        // ───── Volumetric Weight ─────
+        const volWeightEl = document.getElementById("rp-vol-wt");
+        let volWeight = 0;
+        if (volWeightEl) {
+          volWeight = getVolumetricWeight(box);
+          volWeightEl.textContent = volWeight.toFixed(2);
+        }
+        const freightEl = document.getElementById("rp-freight-cost");
+        if (freightEl) {
+          const chargeableWeight = Math.max(localWeightWithBox, volWeight);
+          const freightCost = chargeableWeight * FREIGHT_TARIFF_PER_KG;
+          freightEl.textContent = freightCost.toFixed(2);
+        }
 
-        // const elWeight = document.getElementById("header-total-weight");
-        // if (elWeight) elWeight.textContent = globalWeight.toFixed(2);
-
-        // const elCost = document.getElementById("header-total-cost");
-        // if (elCost) {
-        //   elCost.textContent = totalCost.toLocaleString(undefined, {
-        //     minimumFractionDigits: 2,
-        //     maximumFractionDigits: 2,
-        //   });
-        // }
       }
 
       // Update SKU list in the right panel for the active container group
@@ -3969,7 +4029,7 @@
        * boxDim: { width (x), depth (z), height (y) }
        * Returns a container-result object with .items[].
        */
-      function tryPackInBox(items, boxType, boxDim, remainingPosWeight) {
+      function tryPackInBox(items, boxType, boxDim) {
         const box = {
           type: boxType,
           dimensions: boxDim,
@@ -3986,11 +4046,9 @@
           ],
         };
         let runningWeight = 0;
-        const posWCap =
-          remainingPosWeight != null ? remainingPosWeight : Infinity;
-        const palletWCap =
-          boxDim.palletWeight != null ? boxDim.palletWeight : Infinity;
-        const maxWeight = Math.min(palletWCap, posWCap);
+        // Weight capacity (kg): loadLimit is the max allowed packed weight.
+        const maxWeight =
+          boxDim.loadLimit != null ? boxDim.loadLimit : Infinity;
         [...items]
           .sort((a, b) => b.volume - a.volume)
           .forEach((item) => {
@@ -4006,7 +4064,7 @@
       }
 
       /** Fallback: force the single largest item into the container. */
-      function forcePackLargest(items, BOX_TYPES, remainingPosWeight) {
+      function forcePackLargest(items, BOX_TYPES) {
         if (!items.length) return null;
         const boxType = Object.keys(BOX_TYPES).at(-1);
         const boxDim = Object.values(BOX_TYPES).at(-1);
@@ -4025,11 +4083,9 @@
             },
           ],
         };
-        const posWCap =
-          remainingPosWeight != null ? remainingPosWeight : Infinity;
-        const palletWCap =
-          boxDim.palletWeight != null ? boxDim.palletWeight : Infinity;
-        const maxWeight = Math.min(palletWCap, posWCap);
+        // Weight capacity (kg): loadLimit is the max allowed packed weight.
+        const maxWeight =
+          boxDim.loadLimit != null ? boxDim.loadLimit : Infinity;
         if ((items[0].weight || 0) > maxWeight) return null;
         const pl = findBestPlacement(box.spaces, items[0], boxDim);
         if (pl) {
@@ -4047,19 +4103,23 @@
         );
       }
 
+      function getVolumetricWeight(box, divisor = 6000) {
+        // dimensions in cm → kg
+        return (box.length * box.width * box.height) / divisor;
+      }
+
       // ── Strategy 1: First-Fit Decreasing ──────────────────────────────────
-      function packWithSmallestFirst(items, BOX_TYPES, posWeight) {
+      function packWithSmallestFirst(items, BOX_TYPES) {
         const boxes = [],
           remaining = [...items];
-        let remainingPosWeight = posWeight != null ? posWeight : Infinity;
+
         while (remaining.length) {
           let packed = false;
           for (const [type, dim] of Object.entries(BOX_TYPES)) {
-            const res = tryPackInBox(remaining, type, dim, remainingPosWeight);
+            const res = tryPackInBox(remaining, type, dim);
             if (res.items.length) {
               boxes.push(res);
               const usedW = res.items.reduce((s, i) => s + (i.weight || 0), 0);
-              remainingPosWeight -= usedW;
               res.items.forEach((pi) => {
                 const i = remaining.findIndex((x) => x._uid === pi._uid);
                 if (i !== -1) remaining.splice(i, 1);
@@ -4069,41 +4129,30 @@
             }
           }
           if (!packed) {
-            const res = forcePackLargest(
-              remaining,
-              BOX_TYPES,
-              remainingPosWeight,
-            );
+            const res = forcePackLargest(remaining, BOX_TYPES);
             if (res) {
               boxes.push(res);
               const usedW = res.items.reduce((s, i) => s + (i.weight || 0), 0);
-              remainingPosWeight -= usedW;
+
               const i = remaining.findIndex(
                 (x) => x._uid === res.items[0]._uid,
               );
               if (i !== -1) remaining.splice(i, 1);
             } else break;
           }
-          if (remainingPosWeight <= 0) break;
         }
         return boxes;
       }
 
       // ── Strategy 2: Best-Fit with Maximum Fill Rate ────────────────────────
-      function packWithMaxFill(items, BOX_TYPES, posWeight) {
+      function packWithMaxFill(items, BOX_TYPES) {
         const boxes = [],
           remaining = [...items];
-        let remainingPosWeight = posWeight != null ? posWeight : Infinity;
         while (remaining.length) {
           let bestBox = null,
             bestEff = 0;
           for (const [type, dim] of Object.entries(BOX_TYPES)) {
-            const res = tryPackInBox(
-              [...remaining],
-              type,
-              dim,
-              remainingPosWeight,
-            );
+            const res = tryPackInBox([...remaining], type, dim);
             if (res.items.length) {
               const eff =
                 res.items.reduce((s, i) => s + i.volume, 0) /
@@ -4120,44 +4169,34 @@
               (s, i) => s + (i.weight || 0),
               0,
             );
-            remainingPosWeight -= usedW;
             bestBox.items.forEach((pi) => {
               const i = remaining.findIndex((x) => x._uid === pi._uid);
               if (i !== -1) remaining.splice(i, 1);
             });
           } else {
-            const res = forcePackLargest(
-              remaining,
-              BOX_TYPES,
-              remainingPosWeight,
-            );
+            const res = forcePackLargest(remaining, BOX_TYPES);
             if (res) {
               boxes.push(res);
               const usedW = res.items.reduce((s, i) => s + (i.weight || 0), 0);
-              remainingPosWeight -= usedW;
               const i = remaining.findIndex(
                 (x) => x._uid === res.items[0]._uid,
               );
               if (i !== -1) remaining.splice(i, 1);
             } else break;
           }
-          if (remainingPosWeight <= 0) break;
         }
         return boxes;
       }
 
       // ── Strategy 3: Similar-Size Clustering ───────────────────────────────
-      function packBySimilarSize(items, BOX_TYPES, posWeight) {
+      function packBySimilarSize(items, BOX_TYPES) {
         const boxes = [],
           remaining = [...items].sort((a, b) => b.volume - a.volume);
-        let remainingPosWeight = posWeight != null ? posWeight : Infinity;
         while (remaining.length) {
           const ref = remaining[0];
           let bestBox = null;
           for (const [type, dim] of Object.entries(BOX_TYPES)) {
-            if (
-              tryPackInBox([ref], type, dim, remainingPosWeight).items.length
-            ) {
+            if (tryPackInBox([ref], type, dim).items.length) {
               const similar = remaining
                 .slice(1)
                 .filter(
@@ -4165,12 +4204,7 @@
                     it.volume >= ref.volume * 0.3 &&
                     it.volume <= ref.volume * 1.5,
                 );
-              const res = tryPackInBox(
-                [ref, ...similar],
-                type,
-                dim,
-                remainingPosWeight,
-              );
+              const res = tryPackInBox([ref, ...similar], type, dim);
               if (!bestBox || res.items.length > bestBox.items.length)
                 bestBox = res;
             }
@@ -4181,28 +4215,21 @@
               (s, i) => s + (i.weight || 0),
               0,
             );
-            remainingPosWeight -= usedW;
             bestBox.items.forEach((pi) => {
               const i = remaining.findIndex((x) => x._uid === pi._uid);
               if (i !== -1) remaining.splice(i, 1);
             });
           } else {
-            const res = forcePackLargest(
-              remaining,
-              BOX_TYPES,
-              remainingPosWeight,
-            );
+            const res = forcePackLargest(remaining, BOX_TYPES);
             if (res) {
               boxes.push(res);
               const usedW = res.items.reduce((s, i) => s + (i.weight || 0), 0);
-              remainingPosWeight -= usedW;
               const i = remaining.findIndex(
                 (x) => x._uid === res.items[0]._uid,
               );
               if (i !== -1) remaining.splice(i, 1);
             } else break;
           }
-          if (remainingPosWeight <= 0) break;
         }
         return boxes;
       }
@@ -4213,11 +4240,11 @@
        * Runs all 3 strategies, returns the result with minimum total
        * container volume (= most space-efficient packing).
        */
-      function packItemsIntoBoxes(items, BOX_TYPES, posWeight) {
+      function packItemsIntoBoxes(items, BOX_TYPES) {
         const strategies = [
-          packWithSmallestFirst(items, BOX_TYPES, posWeight),
-          packWithMaxFill(items, BOX_TYPES, posWeight),
-          packBySimilarSize(items, BOX_TYPES, posWeight),
+          packWithSmallestFirst(items, BOX_TYPES),
+          packWithMaxFill(items, BOX_TYPES),
+          packBySimilarSize(items, BOX_TYPES),
         ];
 
         // Count total items placed by each strategy
@@ -4288,10 +4315,11 @@
             height: p.height || 160,
             name: p.name,
             boxWeight: p.weight, // per-box weight limit
+            loadLimit: p.loadLimit,
           };
         });
         // Run packItemsIntoBoxes — returns one result object per pallet
-        const packedBoxes = packItemsIntoBoxes(items, BOX_TYPES, Infinity);
+        const packedBoxes = packItemsIntoBoxes(items, BOX_TYPES);
 
         // ── Build one layout per packed box ──────────────────────────────
         S.boxesData = [];
@@ -4505,6 +4533,7 @@
         allBtn.addEventListener("click", () => {
           S.activeBoxIdx = -1;
           renderBoxTabs();
+          updateSummary();
           render3DLayout();
           initSkuList();
           refreshSkuStatus();

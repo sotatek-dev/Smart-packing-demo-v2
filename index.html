@@ -2758,6 +2758,121 @@
         }
       }
 
+      function createDimSprite(text) {
+        const canvas = document.createElement("canvas");
+        canvas.width = 256;
+        canvas.height = 80;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return null;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "rgba(226,232,240,0.9)";
+        ctx.font = "600 30px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(text, canvas.width / 2, canvas.height / 2 + 1);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.needsUpdate = true;
+        const material = new THREE.SpriteMaterial({
+          map: texture,
+          transparent: true,
+          depthWrite: false,
+          depthTest: true,
+        });
+        const sprite = new THREE.Sprite(material);
+        sprite.renderOrder = 2;
+        return sprite;
+      }
+
+      function createDimArrowLine(start, end) {
+        const dir = new THREE.Vector3().subVectors(end, start);
+        const len = dir.length();
+        if (!len) return null;
+        const d = dir.clone().normalize();
+        const headLength = Math.max(0.45, Math.min(1.2, len * 0.09));
+        const headWidth = Math.max(0.28, Math.min(0.75, headLength * 0.7));
+        const worldUp = new THREE.Vector3(0, 1, 0);
+        let side = new THREE.Vector3().crossVectors(d, worldUp);
+        if (side.lengthSq() < 1e-6) {
+          side = new THREE.Vector3().crossVectors(d, new THREE.Vector3(0, 0, 1));
+        }
+        side.normalize().multiplyScalar(headWidth);
+        const back = d.clone().multiplyScalar(headLength);
+        const shaftGeom = new THREE.BufferGeometry().setFromPoints([start, end]);
+        const shaftMat = new THREE.LineBasicMaterial({
+          color: 0xb8c1d1,
+          transparent: true,
+          opacity: 0.85,
+        });
+        const line = new THREE.Line(shaftGeom, shaftMat);
+
+        const headMat = new THREE.MeshBasicMaterial({
+          color: 0xb8c1d1,
+          transparent: true,
+          opacity: 0.95,
+          side: THREE.DoubleSide,
+          depthTest: true,
+          depthWrite: false,
+        });
+
+        // Filled triangle at start
+        const sTip = start.clone();
+        const sBaseA = start.clone().add(back).add(side);
+        const sBaseB = start.clone().add(back).sub(side);
+        const sGeom = new THREE.BufferGeometry();
+        sGeom.setAttribute(
+          "position",
+          new THREE.Float32BufferAttribute(
+            [
+              sTip.x,
+              sTip.y,
+              sTip.z,
+              sBaseA.x,
+              sBaseA.y,
+              sBaseA.z,
+              sBaseB.x,
+              sBaseB.y,
+              sBaseB.z,
+            ],
+            3,
+          ),
+        );
+        sGeom.computeVertexNormals();
+        const startHead = new THREE.Mesh(sGeom, headMat);
+
+        // Filled triangle at end
+        const eTip = end.clone();
+        const eBaseA = end.clone().sub(back).add(side);
+        const eBaseB = end.clone().sub(back).sub(side);
+        const eGeom = new THREE.BufferGeometry();
+        eGeom.setAttribute(
+          "position",
+          new THREE.Float32BufferAttribute(
+            [
+              eTip.x,
+              eTip.y,
+              eTip.z,
+              eBaseA.x,
+              eBaseA.y,
+              eBaseA.z,
+              eBaseB.x,
+              eBaseB.y,
+              eBaseB.z,
+            ],
+            3,
+          ),
+        );
+        eGeom.computeVertexNormals();
+        const endHead = new THREE.Mesh(eGeom, headMat);
+
+        const grp = new THREE.Group();
+        grp.add(line);
+        grp.add(startHead);
+        grp.add(endHead);
+        return grp;
+      }
+
       function render3DLayout(keepCamera = false) {
         if (!palletGroup || !renderer3D || !scene3D) return;
 
@@ -2841,6 +2956,51 @@
             );
             line.position.set(p.width / 2, refH / 2, p.length / 2);
             palletGrp.add(line);
+
+            // Minimal dimension callouts with arrow lines (single-box view only)
+            if (!viewAll) {
+              const labelScale = Math.max(6, Math.min(p.width, p.length) * 0.45);
+              const wGuideY = 1.5;
+              const wGuideZ = p.length + 6;
+              const wLabel = createDimSprite(`${p.width} cm`);
+              if (wLabel) {
+                wLabel.scale.set(labelScale * 1.2, labelScale * 0.45, 1);
+                wLabel.position.set(p.width / 2, wGuideY, wGuideZ + 1.8);
+                const wArrow = createDimArrowLine(
+                  new THREE.Vector3(0, wGuideY, wGuideZ),
+                  new THREE.Vector3(p.width, wGuideY, wGuideZ),
+                );
+                if (wArrow) palletGrp.add(wArrow);
+                palletGrp.add(wLabel);
+              }
+              const lGuideY = 1.5;
+              const lGuideX = -6;
+              const lLabel = createDimSprite(`${p.length} cm`);
+              if (lLabel) {
+                lLabel.scale.set(labelScale * 1.2, labelScale * 0.45, 1);
+                lLabel.position.set(lGuideX - 1.8, lGuideY, p.length / 2);
+                const lArrow = createDimArrowLine(
+                  new THREE.Vector3(lGuideX, lGuideY, 0),
+                  new THREE.Vector3(lGuideX, lGuideY, p.length),
+                );
+                if (lArrow) palletGrp.add(lArrow);
+                palletGrp.add(lLabel);
+              }
+              // Place height at the corner shared by width/length guide sides.
+              const hGuideX = lGuideX;
+              const hGuideZ = wGuideZ;
+              const hLabel = createDimSprite(`${refH} cm`);
+              if (hLabel) {
+                hLabel.scale.set(labelScale * 1.1, labelScale * 0.45, 1);
+                hLabel.position.set(hGuideX - 1.8, refH / 2, hGuideZ);
+                const hArrow = createDimArrowLine(
+                  new THREE.Vector3(hGuideX, 0, hGuideZ),
+                  new THREE.Vector3(hGuideX, refH, hGuideZ),
+                );
+                if (hArrow) palletGrp.add(hArrow);
+                palletGrp.add(hLabel);
+              }
+            }
           }
 
           // Box label (visible in View All mode or always when multiple)

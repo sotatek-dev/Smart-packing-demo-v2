@@ -793,6 +793,12 @@
         color: var(--text-primary);
       }
 
+      .deck-opt-count {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--primary);
+      }
+
       .deck-badge {
         font-size: 10px;
         padding: 2px 8px;
@@ -805,6 +811,11 @@
       .deck-opt.sel .deck-badge {
         background: rgba(0, 102, 255, 0.1);
         color: var(--primary);
+      }
+
+      .deck-opt-active {
+        border-color: var(--primary);
+        background: #f0f7ff;
       }
 
       .deck-specs {
@@ -2916,9 +2927,22 @@
 
         // Determine which boxes to render
         const viewAll = S.activeBoxIdx === -1;
-        const boxesToRender = viewAll
-          ? S.boxesData
-          : [S.boxesData[S.activeBoxIdx]];
+        let boxesToRender = [];
+        if (viewAll) {
+          let boxSignature = "";
+          S.boxesData.forEach((pd) => {
+            let boxCountId = pd.boxId;
+            Object.keys(pd.placedQty).forEach((key) => {
+              boxCountId += key + pd.placedQty[key];
+            });
+            if (boxCountId != boxSignature) {
+              boxSignature = boxCountId;
+              boxesToRender.push(pd);
+            }
+          });
+        } else {
+          boxesToRender = [S.boxesData[S.activeBoxIdx]];
+        }
         if (!boxesToRender || !boxesToRender.length || !boxesToRender[0])
           return;
 
@@ -3038,7 +3062,7 @@
             );
             const tex = new THREE.CanvasTexture(canvas);
             const labelMesh = new THREE.Mesh(
-              new THREE.PlaneGeometry(p.width * 0.9, p.width * 0.25),
+              new THREE.PlaneGeometry(15, 5),
               new THREE.MeshBasicMaterial({
                 map: tex,
                 transparent: true,
@@ -3047,7 +3071,7 @@
             );
             labelMesh.position.set(
               p.width / 2,
-              (refH || pd.actualHeight || 50) + 30,
+              (refH || pd.actualHeight || 50) + 10,
               p.length / 2,
             );
             labelMesh.rotation.x = -Math.PI / 8;
@@ -3831,11 +3855,25 @@
         }
 
         el.innerHTML = boxes
-          .map(
-            (p) => `
-          <div class="deck-opt data-id="${p.id}">
+          .map((p) => {
+            let boxCount = 0;
+            if (S.optimized) {
+              S.boxesData.forEach((boxData) => {
+                if (boxData.boxId == p.id) {
+                  boxCount++;
+                }
+              });
+            }
+            let boxCountText = "";
+            let deckActive = "";
+            if (boxCount) {
+              boxCountText = " x" + boxCount;
+              deckActive = "deck-opt-active";
+            }
+            const innerHTML = `
+          <div class="deck-opt ${deckActive}" data-id="${p.id}">
             <div class="deck-opt-hd">
-              <span class="deck-opt-name">${p.name}</span>
+              <span class="deck-opt-name">${p.name}<span class="deck-opt-count">${boxCountText}</span></span>
               <span class="deck-badge">${p.type || "STD"}</span>
             </div>
             <div class="deck-specs">
@@ -3849,8 +3887,9 @@
               </div>
             </div>
           </div>
-        `,
-          )
+        `;
+            return innerHTML;
+          })
           .join("");
       }
 
@@ -4356,9 +4395,9 @@
             if (res.items.length) {
               boxes.push(res);
               res.items.forEach((pi) => {
-              const i = remaining.findIndex((x) => x._uid === pi._uid);
-              if (i !== -1) remaining.splice(i, 1);
-            });
+                const i = remaining.findIndex((x) => x._uid === pi._uid);
+                if (i !== -1) remaining.splice(i, 1);
+              });
               packed = true;
               break;
             }
@@ -4758,7 +4797,7 @@
         updateSKUPlaced();
         initSkuList();
         renderBoxTabs();
-
+        renderBoxOptions();
         // Show 3D view
         document.getElementById("vis-empty").style.display = "none";
         document.getElementById("three-container").style.display = "block";
@@ -4804,15 +4843,43 @@
         bar.style.display = "flex";
         bar.innerHTML = "";
 
+        const renderBoxData = {};
+
         S.boxesData.forEach((pd, idx) => {
+          let boxCountId = pd.boxId;
+          Object.keys(pd.placedQty).forEach((key) => {
+            boxCountId += key + pd.placedQty[key];
+          });
+          if (renderBoxData[boxCountId]) {
+            renderBoxData[boxCountId].count++;
+          } else {
+            renderBoxData[boxCountId] = {
+              idx: idx,
+              count: 1,
+              boxId: pd.boxId,
+              length: pd.layout.length,
+            };
+          }
+        });
+
+        Object.keys(renderBoxData).forEach((key) => {
           const tab = document.createElement("button");
-          tab.className = "box-tab" + (idx === S.activeBoxIdx ? " active" : "");
+          tab.className =
+            "box-tab" +
+            (renderBoxData[key].idx === S.activeBoxIdx ? " active" : "");
+
           const _tabBox =
-            window.settingsData.boxes.find((i) => i.id === pd.boxId) || {};
-          const _tabName = _tabBox.name || `Box ${idx + 1}`;
-          tab.innerHTML = `<span class="pt-num">${idx + 1}</span><span class="pt-label">${_tabName}</span><span class="pt-skus">${pd.layout.length} SKUs</span>`;
+            window.settingsData.boxes.find(
+              (i) => i.id === renderBoxData[key].boxId,
+            ) || {};
+          let countElement = "";
+          if (renderBoxData[key].count > 1) {
+            countElement = `<span class="pt-label"> x${renderBoxData[key].count}</span>`;
+          }
+          const _tabName = _tabBox.name || `Box ${renderBoxData[key].idx + 1}`;
+          tab.innerHTML = `<span class="pt-num">${renderBoxData[key].idx + 1}</span><span class="pt-label">${_tabName}</span><span class="pt-skus">${renderBoxData[key].length} SKUs</span>${countElement}`;
           tab.addEventListener("click", () => {
-            S.activeBoxIdx = idx;
+            S.activeBoxIdx = renderBoxData[key].idx;
             _syncActiveBox();
             _dragHistory = [];
             _lastDragSnapshot = null;

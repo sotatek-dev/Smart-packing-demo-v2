@@ -4662,14 +4662,16 @@
         // Build BOX_TYPES from active boxes
         const BOX_TYPES = {};
         settingsData.boxes.forEach((p) => {
-          BOX_TYPES[p.id] = {
-            width: p.width,
-            depth: p.length,
-            height: p.height || 160,
-            name: p.name,
-            boxWeight: p.weight, // per-box weight limit
-            loadLimit: p.loadLimit,
-          };
+          if (p.active) {
+            BOX_TYPES[p.id] = {
+              width: p.width,
+              depth: p.length,
+              height: p.height || 160,
+              name: p.name,
+              boxWeight: p.weight, // per-box weight limit
+              loadLimit: p.loadLimit,
+            };
+          }
         });
         // Run packItemsIntoBoxes — returns one result object per pallet
         const packedBoxes = packItemsIntoBoxes(items, BOX_TYPES);

@@ -765,6 +765,16 @@
         letter-spacing: 0.3px;
       }
 
+      .sec-title-collapsible:hover {
+        color: var(--primary);
+      }
+      .sec-title-collapsible:hover svg {
+        stroke: var(--primary);
+      }
+      .deck-opts.collapsed {
+        display: none;
+      }
+
       /* Deck */
       .deck-opts {
         display: flex;
@@ -796,7 +806,7 @@
       .deck-opt-count {
         font-size: 13px;
         font-weight: 600;
-        color: var(--primary);
+        color: #ef4444;
       }
 
       .deck-badge {
@@ -1835,8 +1845,46 @@
       <div class="left">
         <div class="sidebar-scroll">
           <div class="sec">
-            <div class="sec-title"><span>Available Boxes</span></div>
-            <div class="deck-opts" id="box-opts"></div>
+            <div
+              class="sec-title sec-title-collapsible"
+              id="available-boxes-toggle"
+              onclick="toggleAvailableBoxes()"
+              style="cursor: pointer; user-select: none"
+            >
+              <span>Available Box Types</span>
+              <span
+                id="available-boxes-count-badge"
+                style="
+                  display: inline-block;
+                  padding: 1px 7px;
+                  background: var(--primary);
+                  color: #fff;
+                  border-radius: 10px;
+                  font-size: 9px;
+                  font-weight: 700;
+                  letter-spacing: 0.3px;
+                "
+              ></span>
+              <svg
+                id="available-boxes-chevron"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                style="
+                  margin-left: auto;
+                  transform: rotate(-90deg);
+                  transition: transform 0.2s ease;
+                "
+              >
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+            <div class="deck-opts collapsed" id="box-opts"></div>
           </div>
           <div class="sec">
             <div class="sec-title">
@@ -3891,6 +3939,10 @@
             return innerHTML;
           })
           .join("");
+
+        // Keep badge count in sync
+        const badge = document.getElementById("available-boxes-count-badge");
+        if (badge) badge.textContent = boxes.length;
       }
 
       // ─── SUMMARY ────────────────────────────────
@@ -5073,6 +5125,27 @@
           g = parseInt(hex.slice(3, 5), 16),
           b = parseInt(hex.slice(5, 7), 16);
         return `rgba(${r},${g},${b},${a})`;
+      }
+
+      // ─── COLLAPSIBLE AVAILABLE BOXES ────────────
+      function toggleAvailableBoxes() {
+        const content = document.getElementById("box-opts");
+        const chevron = document.getElementById("available-boxes-chevron");
+        const badge = document.getElementById("available-boxes-count-badge");
+        const isCollapsed = content.classList.toggle("collapsed");
+        chevron.style.transform = isCollapsed
+          ? "rotate(-90deg)"
+          : "rotate(0deg)";
+        if (isCollapsed) {
+          const count =
+            settingsData && settingsData.boxes
+              ? settingsData.boxes.filter((b) => b.active).length
+              : 0;
+          badge.textContent = count;
+          badge.style.display = count ? "inline-block" : "none";
+        } else {
+          badge.style.display = "none";
+        }
       }
 
       // ─── INIT ────────────────────────────────────

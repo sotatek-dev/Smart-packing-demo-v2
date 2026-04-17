@@ -1403,6 +1403,38 @@
         transform: scale(1);
       }
 
+      /* ── CONFIRM DIALOG ── */
+      .confirm-overlay {
+        position: fixed; inset: 0;
+        background: rgba(15,23,42,0.5);
+        backdrop-filter: blur(4px);
+        z-index: 99999;
+        display: flex; align-items: center; justify-content: center;
+        opacity: 0; transition: opacity 0.15s ease;
+      }
+      .confirm-overlay.show { opacity: 1; }
+      .confirm-box {
+        background: var(--bg-panel);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 28px 28px 22px;
+        width: 340px;
+        box-shadow: 0 20px 40px -8px rgba(0,0,0,0.25);
+        transform: scale(0.92);
+        transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1);
+        display: flex; flex-direction: column; gap: 18px;
+      }
+      .confirm-overlay.show .confirm-box { transform: scale(1); }
+      .confirm-box-icon {
+        width: 40px; height: 40px; border-radius: 10px;
+        background: rgba(255,71,87,0.1);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+      }
+      .confirm-box-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+      .confirm-box-msg   { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+      .confirm-box-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
       @keyframes highlightRecord {
         0% {
           background: rgba(59, 130, 246, 0.2);
@@ -3382,11 +3414,49 @@
       window.settingsData = settingsData;
       let searchQueries = { boxes: "", skus: "" };
 
+      // ─── HELPERS ────────────────────────────────
+      const SKU_COLORS = ["#3B82F6","#10B981","#F59E0B","#EF4444","#8B5CF6","#EC4899","#F97316","#06B6D4"];
+
+      function getEntityId(item) {
+        return item.sku_id || item.id;
+      }
+
+      function normalizeBox(b) {
+        return {
+          id:        b.id        || "box_" + Date.now(),
+          name:      b.name      || "New Box",
+          type:      b.type      || "STD",
+          width:     Number(b.width)     || 244,
+          length:    Number(b.length)    || 315,
+          height:    Number(b.height)    || 160,
+          weight:    Number(b.weight)    || 0,
+          loadLimit: Number(b.loadLimit) || 15,
+          active:    b.active !== false,
+        };
+      }
+
+      function normalizeSku(s) {
+        const id = s.sku_id || s.id || "sku_" + Date.now();
+        return {
+          id:     id,
+          sku_id: id,
+          name:   s.name   || "New SKU",
+          width:  Number(s.width)  || 10,
+          length: Number(s.length) || 10,
+          height: Number(s.height) || 10,
+          weight: Number(s.weight) || 1,
+          color:  s.color  || SKU_COLORS[Math.floor(Math.random() * SKU_COLORS.length)],
+          active: s.active !== false,
+        };
+      }
+
       // ─── FETCH (local) ──────────────────────────
       async function fetchSettings() {
         const data = getLocalData();
-        settingsData.boxes = data.boxes;
-        settingsData.skus = data.skus;
+        // Normalize all loaded records to guarantee no missing fields
+        settingsData.boxes = (data.boxes || []).map(normalizeBox);
+        settingsData.skus  = (data.skus  || []).map(normalizeSku);
+        window.settingsData = settingsData;
 
         renderAll();
         initConfigPanel();
@@ -3429,76 +3499,77 @@
         const q = searchQueries.boxes.toLowerCase();
         const filtered = settingsData.boxes.filter(
           (p) =>
-            p.name.toLowerCase().includes(q) ||
-            p.type.toLowerCase().includes(q),
+            (p.name  || "").toLowerCase().includes(q) ||
+            (p.type  || "").toLowerCase().includes(q),
         );
 
         if (filtered.length === 0 && q) {
-          grid.innerHTML =
-            '<div class="fcst-empty" style="grid-column: 1/-1">No boxes match your search.</div>';
+          grid.innerHTML = '<div class="fcst-empty" style="grid-column: 1/-1">No boxes match your search.</div>';
           return;
         }
 
-        grid.innerHTML = filtered
-          .map(
-            (p) => `
-                <div class="entity-card ${p._new ? "new-record-highlight" : ""}" data-id="${p.id}" ${p._new ? 'data-just-added="true"' : ""}>
-                    <div class="card-row">
-                        <div class="field-group full">
-                            <div class="field-label">Box Template Name</div>
-                            <input type="text" class="input-inline" value="${p.name}" onchange="updateEntity('boxes', '${p.id}', 'name', this.value)">
-                        </div>
-                    </div>
-                    <div class="card-row">
-                        <div class="field-group">
-                            <div class="field-label">Type</div>
-                            <input type="text" class="input-inline" value="${p.type}" onchange="updateEntity('boxes', '${p.id}', 'type', this.value)">
-                        </div>
-                        <div class="field-group">
-                            <div class="field-label">Width (cm)</div>
-                            <input type="number" class="input-inline" value="${p.width}" onchange="updateEntity('boxes', '${p.id}', 'width', parseFloat(this.value))">
-                        </div>
-                        <div class="field-group">
-                            <div class="field-label">Length (cm)</div>
-                            <input type="number" class="input-inline" value="${p.length}" onchange="updateEntity('boxes', '${p.id}', 'length', parseFloat(this.value))">
-                        </div>
-                        <div class="field-group">
-                            <div class="field-label">Max Height (cm)</div>
-                            <input type="number" class="input-inline" value="${p.height || 160}" onchange="updateEntity('boxes', '${p.id}', 'height', parseFloat(this.value))">
-                        </div>
-                        <div class="field-group">
-                            <div class="field-label">Weight (kg)</div>
-                            <input type="number" class="input-inline" value="${p.weight}" onchange="updateEntity('boxes', '${p.id}', 'weight', parseFloat(this.value))">
-                        </div>
-                        <div class="field-group">
-                            <div class="field-label">Max Load (kg)</div>
-                            <input type="number" class="input-inline" value="${p.loadLimit}" onchange="updateEntity('boxes', '${p.id}', 'loadLimit', parseFloat(this.value))">
-                        </div>
-                    </div>
-                    <div class="card-footer">
-                        <div class="toggle-item">
-                            <span>Active Status</span>
-                            <label class="toggle-switch">
-                                <input type="checkbox" ${p.active ? "checked" : ""} onchange="updateEntity('boxes', '${p.id}', 'active', this.checked)">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <button class="btn-icon-sm" onclick="deleteEntity('boxes', '${p.id}')" title="Delete Box">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                        </button>
-                    </div>
-                </div>
-            `,
-          )
-          .join("");
+        if (filtered.length === 0) {
+          grid.innerHTML = '<div class="fcst-empty" style="grid-column: 1/-1">No boxes yet. Click "+ Add Box" to create one.</div>';
+          return;
+        }
 
-        // If a new item was just added, it will be the first one
+        grid.innerHTML = filtered.map((p) => `
+          <div class="entity-card ${p._new ? "new-record-highlight" : ""}" data-id="${p.id}" ${p._new ? 'data-just-added="true"' : ""}>
+            <div class="card-row">
+              <div class="field-group full">
+                <div class="field-label">Box Template Name</div>
+                <input type="text" class="input-inline" value="${p.name}" onchange="updateEntity('boxes','${p.id}','name',this.value)">
+              </div>
+            </div>
+            <div class="card-row">
+              <div class="field-group">
+                <div class="field-label">Type</div>
+                <input type="text" class="input-inline" value="${p.type}" onchange="updateEntity('boxes','${p.id}','type',this.value)">
+              </div>
+              <div class="field-group">
+                <div class="field-label">Width (cm)</div>
+                <input type="number" class="input-inline" value="${p.width}" onchange="updateEntity('boxes','${p.id}','width',parseFloat(this.value)||0)">
+              </div>
+              <div class="field-group">
+                <div class="field-label">Length (cm)</div>
+                <input type="number" class="input-inline" value="${p.length}" onchange="updateEntity('boxes','${p.id}','length',parseFloat(this.value)||0)">
+              </div>
+              <div class="field-group">
+                <div class="field-label">Max Height (cm)</div>
+                <input type="number" class="input-inline" value="${p.height}" onchange="updateEntity('boxes','${p.id}','height',parseFloat(this.value)||0)">
+              </div>
+              <div class="field-group">
+                <div class="field-label">Weight (kg)</div>
+                <input type="number" class="input-inline" value="${p.weight}" onchange="updateEntity('boxes','${p.id}','weight',parseFloat(this.value)||0)">
+              </div>
+              <div class="field-group">
+                <div class="field-label">Max Load (kg)</div>
+                <input type="number" class="input-inline" value="${p.loadLimit}" onchange="updateEntity('boxes','${p.id}','loadLimit',parseFloat(this.value)||0)">
+              </div>
+            </div>
+            <div class="card-footer">
+              <div class="toggle-item">
+                <span>Active Status</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" ${p.active ? "checked" : ""} onchange="updateEntity('boxes','${p.id}','active',this.checked)">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <button class="btn-icon-sm" onclick="deleteEntity('boxes','${p.id}')" title="Delete Box">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
+            </div>
+          </div>
+        `).join("");
+
         const firstCard = grid.firstElementChild;
         if (firstCard && firstCard.dataset.justAdded === "true") {
           firstCard.classList.add("new-record-highlight");
-          const nameInput = firstCard.querySelector("input");
-          if (nameInput) setTimeout(() => nameInput.focus(), 100);
-          setTimeout(() => firstCard.removeAttribute("data-just-added"), 2000);
+          setTimeout(() => firstCard.querySelector("input")?.focus(), 100);
+          setTimeout(() => {
+            firstCard.removeAttribute("data-just-added");
+            settingsData.boxes.forEach((p) => delete p._new);
+          }, 2000);
         }
       }
 
@@ -3507,76 +3578,78 @@
         if (!grid) return;
         const q = searchQueries.skus.toLowerCase();
         const filtered = settingsData.skus.filter((b) =>
-          b.name.toLowerCase().includes(q),
+          (b.name || "").toLowerCase().includes(q),
         );
 
         if (filtered.length === 0 && q) {
-          grid.innerHTML =
-            '<div class="fcst-empty" style="grid-column: 1/-1">No SKUs match your search.</div>';
+          grid.innerHTML = '<div class="fcst-empty" style="grid-column: 1/-1">No SKUs match your search.</div>';
           return;
         }
 
-        grid.innerHTML = filtered
-          .map(
-            (b) => `
-                <div class="entity-card ${b._new ? "new-record-highlight" : ""}" data-id="${b.sku_id || b.id}" ${b._new ? 'data-just-added="true"' : ""}>
-                    <div class="card-row">
-                        <div class="field-group full">
-                            <div class="field-label">SKU Name</div>
-                            <input type="text" class="input-inline" value="${b.name}" onchange="updateEntity('skus', '${b.sku_id || b.id}', 'name', this.value)">
-                        </div>
-                    </div>
-                    <div class="card-row">
-                        <div class="field-group">
-                            <div class="field-label">Width (cm)</div>
-                            <input type="number" class="input-inline" value="${b.width}" onchange="updateEntity('skus', '${b.sku_id || b.id}', 'width', parseFloat(this.value))">
-                        </div>
-                        <div class="field-group">
-                            <div class="field-label">Length (cm)</div>
-                            <input type="number" class="input-inline" value="${b.length}" onchange="updateEntity('skus', '${b.sku_id || b.id}', 'length', parseFloat(this.value))">
-                        </div>
-                        <div class="field-group">
-                            <div class="field-label">Height (cm)</div>
-                            <input type="number" class="input-inline" value="${b.height}" onchange="updateEntity('skus', '${b.sku_id || b.id}', 'height', parseFloat(this.value))">
-                        </div>
-                        <div class="field-group">
-                            <div class="field-label">Weight (kg)</div>
-                            <input type="number" class="input-inline" value="${b.weight}" onchange="updateEntity('skus', '${b.sku_id || b.id}', 'weight', parseFloat(this.value))">
-                        </div>
-                    </div>
-                    <div class="card-footer">
-                        <div class="toggles-group">
-                            <div class="toggle-item">
-                                <span>Active</span>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" ${b.active ? "checked" : ""} onchange="updateEntity('skus', '${b.sku_id || b.id}', 'active', this.checked)">
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                        </div>
-                        <div class="toggles-group">
-                            <div class="toggle-item">
-                                <span>Color</span>
-                                <input type="color" value="${b.color || "#3B82F6"}" onchange="updateEntity('skus', '${b.sku_id || b.id}', 'color', this.value)" style="width:30px; height:24px; border:none; padding:0; cursor:pointer">
-                            </div>
-                        </div>
-                        <button class="btn-icon-sm" onclick="deleteEntity('skus', '${b.sku_id || b.id}')">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                        </button>
-                    </div>
+        if (filtered.length === 0) {
+          grid.innerHTML = '<div class="fcst-empty" style="grid-column: 1/-1">No SKUs yet. Click "+ Add SKU" to create one.</div>';
+          return;
+        }
+
+        grid.innerHTML = filtered.map((b) => {
+          const bid = getEntityId(b);
+          return `
+            <div class="entity-card ${b._new ? "new-record-highlight" : ""}" data-id="${bid}" ${b._new ? 'data-just-added="true"' : ""}>
+              <div class="card-row">
+                <div class="field-group full">
+                  <div class="field-label">SKU Name</div>
+                  <input type="text" class="input-inline" value="${b.name}" onchange="updateEntity('skus','${bid}','name',this.value)">
                 </div>
-            `,
-          )
-          .join("");
+              </div>
+              <div class="card-row">
+                <div class="field-group">
+                  <div class="field-label">Width (cm)</div>
+                  <input type="number" class="input-inline" value="${b.width}" onchange="updateEntity('skus','${bid}','width',parseFloat(this.value)||0)">
+                </div>
+                <div class="field-group">
+                  <div class="field-label">Length (cm)</div>
+                  <input type="number" class="input-inline" value="${b.length}" onchange="updateEntity('skus','${bid}','length',parseFloat(this.value)||0)">
+                </div>
+                <div class="field-group">
+                  <div class="field-label">Height (cm)</div>
+                  <input type="number" class="input-inline" value="${b.height}" onchange="updateEntity('skus','${bid}','height',parseFloat(this.value)||0)">
+                </div>
+                <div class="field-group">
+                  <div class="field-label">Weight (kg)</div>
+                  <input type="number" class="input-inline" value="${b.weight}" onchange="updateEntity('skus','${bid}','weight',parseFloat(this.value)||0)">
+                </div>
+              </div>
+              <div class="card-footer">
+                <div class="toggles-group">
+                  <div class="toggle-item">
+                    <span>Active</span>
+                    <label class="toggle-switch">
+                      <input type="checkbox" ${b.active ? "checked" : ""} onchange="updateEntity('skus','${bid}','active',this.checked)">
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                </div>
+                <div class="toggles-group">
+                  <div class="toggle-item">
+                    <span>Color</span>
+                    <input type="color" value="${b.color || "#3B82F6"}" onchange="updateEntity('skus','${bid}','color',this.value)" style="width:30px;height:24px;border:none;padding:0;cursor:pointer">
+                  </div>
+                </div>
+                <button class="btn-icon-sm" onclick="deleteEntity('skus','${bid}')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+              </div>
+            </div>
+          `;
+        }).join("");
 
         const firstCard = grid.firstElementChild;
         if (firstCard && firstCard.dataset.justAdded === "true") {
-          const nameInput = firstCard.querySelector("input");
-          if (nameInput) setTimeout(() => nameInput.focus(), 100);
+          firstCard.classList.add("new-record-highlight");
+          setTimeout(() => firstCard.querySelector("input")?.focus(), 100);
           setTimeout(() => {
             firstCard.removeAttribute("data-just-added");
             settingsData.skus.forEach((p) => delete p._new);
-            settingsData.boxes.forEach((p) => delete p._new);
           }, 2000);
         }
       }
@@ -3590,91 +3663,98 @@
         if (type === "skus") renderSkus();
       }
 
-      // ─── CRUD OPERATIONS (local) ────────────────
-      async function addEntity(type) {
-        const newId = type + "_" + Date.now();
-        const newObj = {
-          id: newId,
-          name: "New " + (type === "boxes" ? "Box" : "SKU"),
-          active: true,
-          _new: true,
-        };
+      // ─── CRUD OPERATIONS ────────────────────────
+      function addEntity(type) {
+        const newObj = type === "boxes"
+          ? normalizeBox({ id: "box_" + Date.now(), _new: true })
+          : normalizeSku({ id: "sku_" + Date.now(), sku_id: "sku_" + Date.now(), _new: true });
 
-        if (type === "boxes") {
-          Object.assign(newObj, {
-            type: "TBD",
-            width: 244,
-            length: 315,
-            height: 160,
-            weight: 6804,
-          });
-        } else if (type === "skus") {
-          const colors = [
-            "#3B82F6",
-            "#10B981",
-            "#F59E0B",
-            "#EF4444",
-            "#8B5CF6",
-            "#EC4899",
-            "#F97316",
-            "#06B6D4",
-          ];
-          newObj.sku_id = newId;
-          Object.assign(newObj, {
-            width: 10,
-            length: 10,
-            height: 10,
-            weight: 1,
-            color: colors[Math.floor(Math.random() * colors.length)],
-          });
-        }
-
+        newObj._new = true;
         settingsData[type].unshift(newObj);
         saveLocalData();
-        showToast(`New ${type.slice(0, -1)} added!`);
         renderAll();
-        initConfigPanel();
         initSkuList();
+        showToast(`New ${type === "boxes" ? "box" : "SKU"} added!`);
 
+        // Open settings modal on the right tab if not already open
+        const overlay = document.getElementById("settings-modal-overlay");
+        if (overlay && !overlay.classList.contains("show")) {
+          overlay.classList.add("show");
+        }
+        const tabId = type === "boxes" ? "tab-box-template" : "tab-sku";
+        document.querySelectorAll(".tab-btn").forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.tab === tabId);
+        });
+        document.querySelectorAll(".tab-pane").forEach((pane) => {
+          pane.classList.toggle("active", pane.id === tabId);
+        });
+
+        const newId = getEntityId(newObj);
         setTimeout(() => {
-          const card = document.querySelector(
-            `.entity-card[data-id="${newId}"]`,
-          );
+          const card = document.querySelector(`.entity-card[data-id="${newId}"]`);
           if (card) {
-            card.classList.add("new-record-highlight");
             card.scrollIntoView({ behavior: "smooth", block: "center" });
             card.querySelector("input")?.focus();
           }
-        }, 50);
+        }, 60);
       }
 
-      async function updateEntity(type, id, field, value) {
+      function updateEntity(type, id, field, value) {
         const item = settingsData[type].find(
           (i) => i.id === id || i.sku_id === id,
         );
-        if (item) item[field] = value;
+        if (!item) return;
+        item[field] = value;
         saveLocalData();
-
         if (type === "skus") initSkuList();
         else initConfigPanel();
       }
 
-      async function deleteEntity(type, id) {
-        if (
-          !confirm(`Are you sure you want to delete this ${type.slice(0, -1)}?`)
-        )
-          return;
-        settingsData[type] = settingsData[type].filter(
-          (i) => i[idField] !== id && i.id !== id,
-        );
-        saveLocalData();
-        showToast("Record deleted");
-        renderAll();
-        initConfigPanel();
-        initSkuList();
+      function deleteEntity(type, id) {
+        const label = type === "boxes" ? "box" : "SKU";
+        showConfirm(`Are you sure you want to delete this ${label}?`, () => {
+          settingsData[type] = settingsData[type].filter(
+            (i) => i.id !== id && i.sku_id !== id,
+          );
+          saveLocalData();
+          renderAll();
+          initSkuList();
+          showToast("Record deleted");
+        });
       }
 
-      // }
+      function showConfirm(message, onConfirm) {
+        const overlay = document.createElement("div");
+        overlay.className = "confirm-overlay";
+        overlay.innerHTML = `
+          <div class="confirm-box">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div class="confirm-box-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff4757" stroke-width="2.5">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </div>
+              <div>
+                <div class="confirm-box-title">Confirm Delete</div>
+                <div class="confirm-box-msg">${message}</div>
+              </div>
+            </div>
+            <div class="confirm-box-actions">
+              <button class="btn btn-ghost" id="confirm-cancel">Cancel</button>
+              <button class="btn btn-primary" id="confirm-ok" style="background:var(--danger)">Delete</button>
+            </div>
+          </div>`;
+        document.body.appendChild(overlay);
+        requestAnimationFrame(() => overlay.classList.add("show"));
+        const close = () => {
+          overlay.classList.remove("show");
+          setTimeout(() => overlay.remove(), 180);
+        };
+        overlay.querySelector("#confirm-cancel").addEventListener("click", close);
+        overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
+        overlay.querySelector("#confirm-ok").addEventListener("click", () => { close(); onConfirm(); });
+      }
 
       // ─── MODAL CONTROLS ─────────────────────────
       const btnSettings = document.getElementById("btn-settings");
@@ -3931,7 +4011,7 @@
               </div>
               <div class="deck-spec">
                 <svg class="spec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
-                Max load ${p.loadLimit.toLocaleString()}kg
+                Max load ${(p.loadLimit ?? 0).toLocaleString()}kg
               </div>
             </div>
           </div>

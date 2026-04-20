@@ -1405,35 +1405,62 @@
 
       /* ── CONFIRM DIALOG ── */
       .confirm-overlay {
-        position: fixed; inset: 0;
-        background: rgba(15,23,42,0.5);
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.5);
         backdrop-filter: blur(4px);
         z-index: 99999;
-        display: flex; align-items: center; justify-content: center;
-        opacity: 0; transition: opacity 0.15s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.15s ease;
       }
-      .confirm-overlay.show { opacity: 1; }
+      .confirm-overlay.show {
+        opacity: 1;
+      }
       .confirm-box {
         background: var(--bg-panel);
         border: 1px solid var(--border);
         border-radius: 14px;
         padding: 28px 28px 22px;
         width: 340px;
-        box-shadow: 0 20px 40px -8px rgba(0,0,0,0.25);
+        box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.25);
         transform: scale(0.92);
-        transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1);
-        display: flex; flex-direction: column; gap: 18px;
+        transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
       }
-      .confirm-overlay.show .confirm-box { transform: scale(1); }
+      .confirm-overlay.show .confirm-box {
+        transform: scale(1);
+      }
       .confirm-box-icon {
-        width: 40px; height: 40px; border-radius: 10px;
-        background: rgba(255,71,87,0.1);
-        display: flex; align-items: center; justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: rgba(255, 71, 87, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
         flex-shrink: 0;
       }
-      .confirm-box-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
-      .confirm-box-msg   { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
-      .confirm-box-actions { display: flex; gap: 10px; justify-content: flex-end; }
+      .confirm-box-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+      }
+      .confirm-box-msg {
+        font-size: 13px;
+        color: var(--text-secondary);
+        line-height: 1.5;
+      }
+      .confirm-box-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+      }
 
       @keyframes highlightRecord {
         0% {
@@ -1594,6 +1621,13 @@
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
       }
 
+      .entity-card.error:hover {
+        border: 1px solid #ef4444;
+      }
+      .entity-card.error {
+        border: 1px solid #ef4444;
+      }
+
       .entity-card:hover {
         border-color: var(--primary);
         box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.1);
@@ -1663,6 +1697,20 @@
       .btn-add {
         background: var(--primary);
         color: #fff;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+      }
+
+      .btn-close {
+        background: #eee;
         padding: 10px 20px;
         border-radius: 8px;
         font-size: 13px;
@@ -3311,7 +3359,7 @@
         ],
         skus: [
           {
-            sku_id: "T2N651",
+            id: "T2N651",
             name: "T2N651",
             width: 7.62,
             length: 9.65,
@@ -3321,7 +3369,7 @@
             active: true,
           },
           {
-            sku_id: "TW2R42500",
+            id: "TW2R42500",
             name: "TW2R42500",
             width: 7.49,
             length: 8.61,
@@ -3331,7 +3379,7 @@
             active: true,
           },
           {
-            sku_id: "TW2W99600VQ",
+            id: "TW2W99600VQ",
             name: "TW2W99600VQ",
             width: 10.39,
             length: 10.59,
@@ -3341,7 +3389,7 @@
             active: true,
           },
           {
-            sku_id: "TW2R63100",
+            id: "TW2R63100",
             name: "TW2R63100",
             width: 10.01,
             length: 3.99,
@@ -3351,7 +3399,7 @@
             active: true,
           },
           {
-            sku_id: "T2P370",
+            id: "T2P370",
             name: "T2P370",
             width: 3.1,
             length: 19.1,
@@ -3388,13 +3436,6 @@
           }
           if (!loaded.boxes)
             loaded.boxes = JSON.parse(JSON.stringify(DEFAULT_DATA.boxes));
-          // Migrate old box templates without height field
-          loaded.boxes.forEach((p) => {
-            if (!p.height) p.height = 160;
-          });
-          // Migrate old 'boxes' key (SKUs) to 'skus'
-          // Note: after pallets->boxes migration above, loaded.boxes is now box templates
-          // SKUs were saved under 'skus' key — just ensure it exists
           if (!loaded.skus) loaded.skus = [];
           // Drop stale positions key
           delete loaded.positions;
@@ -3415,38 +3456,45 @@
       let searchQueries = { boxes: "", skus: "" };
 
       // ─── HELPERS ────────────────────────────────
-      const SKU_COLORS = ["#3B82F6","#10B981","#F59E0B","#EF4444","#8B5CF6","#EC4899","#F97316","#06B6D4"];
-
-      function getEntityId(item) {
-        return item.sku_id || item.id;
-      }
+      const SKU_COLORS = [
+        "#3B82F6",
+        "#10B981",
+        "#F59E0B",
+        "#EF4444",
+        "#8B5CF6",
+        "#EC4899",
+        "#F97316",
+        "#06B6D4",
+      ];
 
       function normalizeBox(b) {
         return {
-          id:        b.id        || "box_" + Date.now(),
-          name:      b.name      || "",
-          type:      b.type      || "",
-          width:     Number(b.width)     || 0,
-          length:    Number(b.length)    || 0,
-          height:    Number(b.height)    || 0,
-          weight:    Number(b.weight)    || 0,
+          id: b.id || "box_" + Date.now(),
+          name: b.name || "",
+          type: b.type || "",
+          width: Number(b.width) || 0,
+          length: Number(b.length) || 0,
+          height: Number(b.height) || 0,
+          weight: Number(b.weight) || 0,
           loadLimit: Number(b.loadLimit) || 0,
-          active:    b.active !== false,
+          active: b.active !== false,
+          isError: false,
         };
       }
 
       function normalizeSku(s) {
-        const id = s.sku_id || s.id || "sku_" + Date.now();
         return {
-          id:     id,
-          sku_id: id,
-          name:   s.name   || "New SKU",
-          width:  Number(s.width)  || 10,
-          length: Number(s.length) || 10,
-          height: Number(s.height) || 10,
-          weight: Number(s.weight) || 1,
-          color:  s.color  || SKU_COLORS[Math.floor(Math.random() * SKU_COLORS.length)],
+          id: s.id || "sku_" + Date.now(),
+          name: s.name || "",
+          width: Number(s.width) || 0,
+          length: Number(s.length) || 0,
+          height: Number(s.height) || 0,
+          weight: Number(s.weight) || 0,
+          color:
+            s.color ||
+            SKU_COLORS[Math.floor(Math.random() * SKU_COLORS.length)],
           active: s.active !== false,
+          isError: false,
         };
       }
 
@@ -3455,7 +3503,7 @@
         const data = getLocalData();
         // Normalize all loaded records to guarantee no missing fields
         settingsData.boxes = (data.boxes || []).map(normalizeBox);
-        settingsData.skus  = (data.skus  || []).map(normalizeSku);
+        settingsData.skus = (data.skus || []).map(normalizeSku);
         window.settingsData = settingsData;
 
         renderAll();
@@ -3497,70 +3545,140 @@
         const grid = document.querySelector("#tab-box-template .entity-grid");
         if (!grid) return;
         const q = searchQueries.boxes.toLowerCase();
-        const filtered = settingsData.boxes.filter(
+        const filtered = tempSettingData.boxes.filter(
           (p) =>
-            (p.name  || "").toLowerCase().includes(q) ||
-            (p.type  || "").toLowerCase().includes(q),
+            (p.name || "").toLowerCase().includes(q) ||
+            (p.type || "").toLowerCase().includes(q),
         );
 
         if (filtered.length === 0 && q) {
-          grid.innerHTML = '<div class="fcst-empty" style="grid-column: 1/-1">No boxes match your search.</div>';
+          grid.innerHTML =
+            '<div class="fcst-empty" style="grid-column: 1/-1">No boxes match your search.</div>';
           return;
         }
 
         if (filtered.length === 0) {
-          grid.innerHTML = '<div class="fcst-empty" style="grid-column: 1/-1">No boxes yet. Click "+ Add Box" to create one.</div>';
+          grid.innerHTML =
+            '<div class="fcst-empty" style="grid-column: 1/-1">No boxes yet. Click "+ Add Box" to create one.</div>';
           return;
         }
 
-        grid.innerHTML = filtered.map((p) => `
-          <div class="entity-card ${p._new ? "new-record-highlight" : ""}" data-id="${p.id}" ${p._new ? 'data-just-added="true"' : ""}>
-            <div class="card-row">
-              <div class="field-group full">
-                <div class="field-label">Box Template Name</div>
-                <input type="text" class="input-inline" value="${p.name}" onchange="updateEntity('boxes','${p.id}','name',this.value)">
+        grid.innerHTML = filtered
+          .map(
+            (p) => /* HTML */ `
+              <div
+                id="form-box-template-${p.id}"
+                class="
+                  entity-card 
+                  ${p._new ? "new-record-highlight" : ""} 
+                  ${p.isError ? "error" : ""}
+                "
+                data-id="${p.id}"
+                ${p._new ? 'data-just-added="true"' : ""}
+              >
+                <div class="card-row">
+                  <div class="field-group full">
+                    <div class="field-label">Box Template Name</div>
+                    <input
+                      type="text"
+                      class="input-inline"
+                      value="${p.name}"
+                      onInput="updateEntity('boxes','${p.id}','name',this.value)"
+                    />
+                  </div>
+                </div>
+                <div class="card-row">
+                  <div class="field-group">
+                    <div class="field-label">Type</div>
+                    <input
+                      type="text"
+                      class="input-inline"
+                      value="${p.type}"
+                      onInput="updateEntity('boxes','${p.id}','type',this.value)"
+                    />
+                  </div>
+                  <div class="field-group">
+                    <div class="field-label">Width (cm)</div>
+                    <input
+                      type="number"
+                      class="input-inline"
+                      value="${p.width}"
+                      onInput="updateEntity('boxes','${p.id}','width',parseFloat(this.value)||0)"
+                    />
+                  </div>
+                  <div class="field-group">
+                    <div class="field-label">Length (cm)</div>
+                    <input
+                      type="number"
+                      class="input-inline"
+                      value="${p.length}"
+                      onInput="updateEntity('boxes','${p.id}','length',parseFloat(this.value)||0)"
+                    />
+                  </div>
+                  <div class="field-group">
+                    <div class="field-label">Max Height (cm)</div>
+                    <input
+                      type="number"
+                      class="input-inline"
+                      value="${p.height}"
+                      onInput="updateEntity('boxes','${p.id}','height',parseFloat(this.value)||0)"
+                    />
+                  </div>
+                  <div class="field-group">
+                    <div class="field-label">Weight (kg)</div>
+                    <input
+                      type="number"
+                      class="input-inline"
+                      value="${p.weight}"
+                      onInput="updateEntity('boxes','${p.id}','weight',parseFloat(this.value)||0)"
+                    />
+                  </div>
+                  <div class="field-group">
+                    <div class="field-label">Max Load (kg)</div>
+                    <input
+                      type="number"
+                      class="input-inline"
+                      value="${p.loadLimit}"
+                      onInput="updateEntity('boxes','${p.id}','loadLimit',parseFloat(this.value)||0)"
+                    />
+                  </div>
+                </div>
+                <div class="card-footer">
+                  <div class="toggle-item">
+                    <span>Active Status</span>
+                    <label class="toggle-switch">
+                      <input
+                        type="checkbox"
+                        ${p.active ? "checked" : ""}
+                        onInput="updateEntity('boxes','${p.id}','active',this.checked)"
+                      />
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <button
+                    class="btn-icon-sm"
+                    onclick="deleteEntity('boxes','${p.id}')"
+                    title="Delete Box"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path
+                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                      ></path>
+                    </svg>
+                  </button>
+                </div>
               </div>
-            </div>
-            <div class="card-row">
-              <div class="field-group">
-                <div class="field-label">Type</div>
-                <input type="text" class="input-inline" value="${p.type}" onchange="updateEntity('boxes','${p.id}','type',this.value)">
-              </div>
-              <div class="field-group">
-                <div class="field-label">Width (cm)</div>
-                <input type="number" class="input-inline" value="${p.width}" onchange="updateEntity('boxes','${p.id}','width',parseFloat(this.value)||0)">
-              </div>
-              <div class="field-group">
-                <div class="field-label">Length (cm)</div>
-                <input type="number" class="input-inline" value="${p.length}" onchange="updateEntity('boxes','${p.id}','length',parseFloat(this.value)||0)">
-              </div>
-              <div class="field-group">
-                <div class="field-label">Max Height (cm)</div>
-                <input type="number" class="input-inline" value="${p.height}" onchange="updateEntity('boxes','${p.id}','height',parseFloat(this.value)||0)">
-              </div>
-              <div class="field-group">
-                <div class="field-label">Weight (kg)</div>
-                <input type="number" class="input-inline" value="${p.weight}" onchange="updateEntity('boxes','${p.id}','weight',parseFloat(this.value)||0)">
-              </div>
-              <div class="field-group">
-                <div class="field-label">Max Load (kg)</div>
-                <input type="number" class="input-inline" value="${p.loadLimit}" onchange="updateEntity('boxes','${p.id}','loadLimit',parseFloat(this.value)||0)">
-              </div>
-            </div>
-            <div class="card-footer">
-              <div class="toggle-item">
-                <span>Active Status</span>
-                <label class="toggle-switch">
-                  <input type="checkbox" ${p.active ? "checked" : ""} onchange="updateEntity('boxes','${p.id}','active',this.checked)">
-                  <span class="slider"></span>
-                </label>
-              </div>
-              <button class="btn-icon-sm" onclick="deleteEntity('boxes','${p.id}')" title="Delete Box">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-              </button>
-            </div>
-          </div>
-        `).join("");
+            `,
+          )
+          .join("");
 
         const firstCard = grid.firstElementChild;
         if (firstCard && firstCard.dataset.justAdded === "true") {
@@ -3577,71 +3695,132 @@
         const grid = document.querySelector("#tab-sku .entity-grid");
         if (!grid) return;
         const q = searchQueries.skus.toLowerCase();
-        const filtered = settingsData.skus.filter((b) =>
+        const filtered = tempSettingData.skus.filter((b) =>
           (b.name || "").toLowerCase().includes(q),
         );
 
         if (filtered.length === 0 && q) {
-          grid.innerHTML = '<div class="fcst-empty" style="grid-column: 1/-1">No SKUs match your search.</div>';
+          grid.innerHTML =
+            '<div class="fcst-empty" style="grid-column: 1/-1">No SKUs match your search.</div>';
           return;
         }
 
         if (filtered.length === 0) {
-          grid.innerHTML = '<div class="fcst-empty" style="grid-column: 1/-1">No SKUs yet. Click "+ Add SKU" to create one.</div>';
+          grid.innerHTML =
+            '<div class="fcst-empty" style="grid-column: 1/-1">No SKUs yet. Click "+ Add SKU" to create one.</div>';
           return;
         }
 
-        grid.innerHTML = filtered.map((b) => {
-          const bid = getEntityId(b);
-          return `
-            <div class="entity-card ${b._new ? "new-record-highlight" : ""}" data-id="${bid}" ${b._new ? 'data-just-added="true"' : ""}>
-              <div class="card-row">
-                <div class="field-group full">
-                  <div class="field-label">SKU Name</div>
-                  <input type="text" class="input-inline" value="${b.name}" onchange="updateEntity('skus','${bid}','name',this.value)">
-                </div>
-              </div>
-              <div class="card-row">
-                <div class="field-group">
-                  <div class="field-label">Width (cm)</div>
-                  <input type="number" class="input-inline" value="${b.width}" onchange="updateEntity('skus','${bid}','width',parseFloat(this.value)||0)">
-                </div>
-                <div class="field-group">
-                  <div class="field-label">Length (cm)</div>
-                  <input type="number" class="input-inline" value="${b.length}" onchange="updateEntity('skus','${bid}','length',parseFloat(this.value)||0)">
-                </div>
-                <div class="field-group">
-                  <div class="field-label">Height (cm)</div>
-                  <input type="number" class="input-inline" value="${b.height}" onchange="updateEntity('skus','${bid}','height',parseFloat(this.value)||0)">
-                </div>
-                <div class="field-group">
-                  <div class="field-label">Weight (kg)</div>
-                  <input type="number" class="input-inline" value="${b.weight}" onchange="updateEntity('skus','${bid}','weight',parseFloat(this.value)||0)">
-                </div>
-              </div>
-              <div class="card-footer">
-                <div class="toggles-group">
-                  <div class="toggle-item">
-                    <span>Active</span>
-                    <label class="toggle-switch">
-                      <input type="checkbox" ${b.active ? "checked" : ""} onchange="updateEntity('skus','${bid}','active',this.checked)">
-                      <span class="slider"></span>
-                    </label>
+        grid.innerHTML = filtered
+          .map((b) => {
+            return /* HTML */ `
+              <div
+                id="form-sku-template-${b.id}"
+                class="
+                  entity-card 
+                  ${b._new ? "new-record-highlight" : ""} 
+                  ${b.isError ? "error" : ""}
+                "
+                data-id="${b.id}"
+                ${b._new ? 'data-just-added="true"' : ""}
+              >
+                <div class="card-row">
+                  <div class="field-group full">
+                    <div class="field-label">SKU Name</div>
+                    <input
+                      type="text"
+                      class="input-inline"
+                      value="${b.name}"
+                      onInput="updateEntity('skus','${b.id}','name',this.value)"
+                    />
                   </div>
                 </div>
-                <div class="toggles-group">
-                  <div class="toggle-item">
-                    <span>Color</span>
-                    <input type="color" value="${b.color || "#3B82F6"}" onchange="updateEntity('skus','${bid}','color',this.value)" style="width:30px;height:24px;border:none;padding:0;cursor:pointer">
+                <div class="card-row">
+                  <div class="field-group">
+                    <div class="field-label">Width (cm)</div>
+                    <input
+                      type="number"
+                      class="input-inline"
+                      value="${b.width}"
+                      onInput="updateEntity('skus','${b.id}','width',parseFloat(this.value)||0)"
+                    />
+                  </div>
+                  <div class="field-group">
+                    <div class="field-label">Length (cm)</div>
+                    <input
+                      type="number"
+                      class="input-inline"
+                      value="${b.length}"
+                      onInput="updateEntity('skus','${b.id}','length',parseFloat(this.value)||0)"
+                    />
+                  </div>
+                  <div class="field-group">
+                    <div class="field-label">Height (cm)</div>
+                    <input
+                      type="number"
+                      class="input-inline"
+                      value="${b.height}"
+                      onInput="updateEntity('skus','${b.id}','height',parseFloat(this.value)||0)"
+                    />
+                  </div>
+                  <div class="field-group">
+                    <div class="field-label">Weight (kg)</div>
+                    <input
+                      type="number"
+                      class="input-inline"
+                      value="${b.weight}"
+                      onInput="updateEntity('skus','${b.id}','weight',parseFloat(this.value)||0)"
+                    />
                   </div>
                 </div>
-                <button class="btn-icon-sm" onclick="deleteEntity('skus','${bid}')">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                </button>
+                <div class="card-footer">
+                  <div class="toggles-group">
+                    <div class="toggle-item">
+                      <span>Active</span>
+                      <label class="toggle-switch">
+                        <input
+                          type="checkbox"
+                          ${b.active ? "checked" : ""}
+                          onInput="updateEntity('skus','${b.id}','active',this.checked)"
+                        />
+                        <span class="slider"></span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="toggles-group">
+                    <div class="toggle-item">
+                      <span>Color</span>
+                      <input
+                        type="color"
+                        value="${b.color || "#3B82F6"}"
+                        onInput="updateEntity('skus','${b.id}','color',this.value)"
+                        style="width:30px;height:24px;border:none;padding:0;cursor:pointer"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    class="btn-icon-sm"
+                    onclick="deleteEntity('skus','${b.id}')"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path
+                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                      ></path>
+                    </svg>
+                  </button>
+                </div>
               </div>
-            </div>
-          `;
-        }).join("");
+            `;
+          })
+          .join("");
 
         const firstCard = grid.firstElementChild;
         if (firstCard && firstCard.dataset.justAdded === "true") {
@@ -3665,15 +3844,17 @@
 
       // ─── CRUD OPERATIONS ────────────────────────
       function addEntity(type) {
-        const newObj = type === "boxes"
-          ? normalizeBox({ id: "box_" + Date.now(), _new: true })
-          : normalizeSku({ id: "sku_" + Date.now(), sku_id: "sku_" + Date.now(), _new: true });
+        const newObj =
+          type === "boxes"
+            ? normalizeBox({ id: "box_" + Date.now(), _new: true })
+            : normalizeSku({
+                id: "sku_" + Date.now(),
+                _new: true,
+              });
 
         newObj._new = true;
-        settingsData[type].unshift(newObj);
-        saveLocalData();
+        tempSettingData[type].unshift(newObj);
         renderAll();
-        initSkuList();
         showToast(`New ${type === "boxes" ? "box" : "SKU"} added!`);
 
         // Open settings modal on the right tab if not already open
@@ -3689,9 +3870,10 @@
           pane.classList.toggle("active", pane.id === tabId);
         });
 
-        const newId = getEntityId(newObj);
         setTimeout(() => {
-          const card = document.querySelector(`.entity-card[data-id="${newId}"]`);
+          const card = document.querySelector(
+            `.entity-card[data-id="${newObj.id}"]`,
+          );
           if (card) {
             card.scrollIntoView({ behavior: "smooth", block: "center" });
             card.querySelector("input")?.focus();
@@ -3700,25 +3882,38 @@
       }
 
       function updateEntity(type, id, field, value) {
-        const item = settingsData[type].find(
-          (i) => i.id === id || i.sku_id === id,
-        );
+        const item = tempSettingData[type].find((i) => i.id === id);
         if (!item) return;
         item[field] = value;
-        saveLocalData();
-        if (type === "skus") initSkuList();
-        else initConfigPanel();
+        item.isError = checkForError(item);
+        renderItemError(id, type, item);
+      }
+
+      function renderItemError(elementId, type, item) {
+        if (type === "skus") {
+          const skuElement = document.getElementById(
+            `form-sku-template-${elementId}`,
+          );
+          skuElement.className = `entity-card 
+                  ${item._new ? "new-record-highlight" : ""} 
+                  ${item.isError ? "error" : ""}`;
+        } else {
+          const boxTemplateElement = document.getElementById(
+            `form-box-template-${elementId}`,
+          );
+          boxTemplateElement.className = `entity-card 
+                  ${item._new ? "new-record-highlight" : ""} 
+                  ${item.isError ? "error" : ""}`;
+        }
       }
 
       function deleteEntity(type, id) {
         const label = type === "boxes" ? "box" : "SKU";
         showConfirm(`Are you sure you want to delete this ${label}?`, () => {
-          settingsData[type] = settingsData[type].filter(
-            (i) => i.id !== id && i.sku_id !== id,
+          tempSettingData[type] = tempSettingData[type].filter(
+            (i) => i.id !== id,
           );
-          saveLocalData();
           renderAll();
-          initSkuList();
           showToast("Record deleted");
         });
       }
@@ -3751,9 +3946,16 @@
           overlay.classList.remove("show");
           setTimeout(() => overlay.remove(), 180);
         };
-        overlay.querySelector("#confirm-cancel").addEventListener("click", close);
-        overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
-        overlay.querySelector("#confirm-ok").addEventListener("click", () => { close(); onConfirm(); });
+        overlay
+          .querySelector("#confirm-cancel")
+          .addEventListener("click", close);
+        overlay.addEventListener("click", (e) => {
+          if (e.target === overlay) close();
+        });
+        overlay.querySelector("#confirm-ok").addEventListener("click", () => {
+          close();
+          onConfirm();
+        });
       }
 
       // ─── MODAL CONTROLS ─────────────────────────
@@ -3761,75 +3963,207 @@
       const modalOverlay = document.createElement("div");
       modalOverlay.className = "modal-overlay";
       modalOverlay.id = "settings-modal-overlay";
-      modalOverlay.innerHTML = `
-            <div class="settings-modal">
-                <div class="modal-hdr">
-                    <h2>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <circle cx="12" cy="12" r="3"></circle>
-                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                        </svg>
-                        Entity Configuration
-                    </h2>
-                    <button class="btn-icon-sm" id="close-modal" style="border:none; background:transparent">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                    </button>
+      modalOverlay.innerHTML = /* HTML */ `
+        <div class="settings-modal">
+          <div class="modal-hdr">
+            <h2>
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <circle cx="12" cy="12" r="3"></circle>
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+                ></path>
+              </svg>
+              Entity Configuration
+            </h2>
+            <button
+              class="btn-icon-sm"
+              id="close-modal"
+              style="border:none; background:transparent"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+          <div class="modal-content-wrap">
+            <div class="modal-sidebar">
+              <div class="sidebar-nav">
+                <div class="nav-item active" data-tab="box-template">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <rect
+                      x="3"
+                      y="3"
+                      width="18"
+                      height="18"
+                      rx="2"
+                      ry="2"
+                    ></rect>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="12" y1="3" x2="12" y2="21"></line>
+                  </svg>
+                  Boxes
                 </div>
-                <div class="modal-content-wrap">
-                    <div class="modal-sidebar">
-                        <div class="sidebar-nav">
-                            <div class="nav-item active" data-tab="box-template">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="12" x2="21" y2="12"></line><line x1="12" y1="3" x2="12" y2="21"></line></svg>
-                                Boxes
-                            </div>
-                            <div class="nav-item" data-tab="sku">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
-                                SKUs
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-main">
-                        <div class="settings-sec active" id="tab-box-template">
-                            <div class="sec-hdr">
-                                <h3>Box Templates</h3>
-                                <div class="search-wrap">
-                                    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                                    <input type="text" placeholder="Search boxes..." oninput="handleSearch('boxes', this.value)">
-                                </div>
-                                <button class="btn-add" onclick="addEntity('boxes')">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                    Add Box
-                                </button>
-                            </div>
-                            <div class="entity-grid"></div>
-                        </div>
-                        <div class="settings-sec" id="tab-sku">
-                            <div class="sec-hdr">
-                                <h3>SKU Catalog</h3>
-                                <div class="search-wrap">
-                                    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                                    <input type="text" placeholder="Search SKUs..." oninput="handleSearch('skus', this.value)">
-                                </div>
-                                <button class="btn-add" onclick="addEntity('skus')">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                    Add SKU
-                                </button>
-                            </div>
-                            <div class="entity-grid"></div>
-                        </div>
-                    </div>
+                <div class="nav-item" data-tab="sku">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+                    ></path>
+                  </svg>
+                  SKUs
                 </div>
-                <div class="modal-ftr">
-                    <button class="btn-manual" style="background:#eee; color:#333; border:none" id="cancel-settings">Close</button>
-                    <button class="btn-add" id="save-settings">Save All Changes</button>
-                </div>
+              </div>
             </div>
-        `;
+            <div class="modal-main">
+              <div class="settings-sec active" id="tab-box-template">
+                <div class="sec-hdr">
+                  <h3>Box Templates</h3>
+                  <div class="search-wrap">
+                    <svg
+                      class="search-icon"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input
+                      type="text"
+                      placeholder="Search boxes..."
+                      oninput="handleSearch('boxes', this.value)"
+                    />
+                  </div>
+                  <button class="btn-add" onclick="addEntity('boxes')">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="3"
+                    >
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Add Box
+                  </button>
+                </div>
+                <div class="entity-grid"></div>
+              </div>
+              <div class="settings-sec" id="tab-sku">
+                <div class="sec-hdr">
+                  <h3>SKU Catalog</h3>
+                  <div class="search-wrap">
+                    <svg
+                      class="search-icon"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input
+                      type="text"
+                      placeholder="Search SKUs..."
+                      oninput="handleSearch('skus', this.value)"
+                    />
+                  </div>
+                  <button class="btn-add" onclick="addEntity('skus')">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="3"
+                    >
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Add SKU
+                  </button>
+                </div>
+                <div class="entity-grid"></div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-ftr">
+            <button
+              class="btn-close"
+              style="background:#eee; color:#333; border:none"
+              id="cancel-settings"
+            >
+              Close
+            </button>
+            <button class="btn-add" id="save-settings">Save All Changes</button>
+          </div>
+        </div>
+      `;
       document.body.appendChild(modalOverlay);
 
+      function checkForError(item) {
+        let isError = false;
+        const keyToCheck = [
+          "name",
+          "type",
+          "width",
+          "length",
+          "height",
+          "weight",
+          "loadLimit",
+        ];
+        for (let i = 0; i < keyToCheck.length; i++) {
+          const key = keyToCheck[i];
+          if (key in item) {
+            if (!item[key]) {
+              isError = true;
+              break;
+            }
+          }
+        }
+        return isError;
+      }
+      //modal validation setup
+      const tempSettingData = {
+        boxes: [],
+        skus: [],
+      };
       // Sidebar Navigation Handling
       const navItems = modalOverlay.querySelectorAll(".nav-item");
       const sections = modalOverlay.querySelectorAll(".settings-sec");
@@ -3845,8 +4179,54 @@
         });
       });
 
+      function handleSaveChanges() {
+        const itemKeys = Object.keys(tempSettingData);
+        let isSubmitViable = true;
+        let errorElementId = "";
+        for (let i = 0; i < itemKeys.length; i++) {
+          const boxType = tempSettingData[itemKeys[i]];
+          if (itemKeys[i] === "boxes") {
+            errorElementId = "form-box-template-";
+          } else {
+            errorElementId = "form-sku-template-";
+          }
+          for (let j = 0; j < boxType.length; j++) {
+            boxType[j].isError = checkForError(boxType[j]);
+            if (boxType[j].isError) {
+              isSubmitViable = false;
+              const elementId = boxType[j].id;
+              errorElementId += elementId;
+              renderItemError(elementId, itemKeys[i], boxType[j]);
+              break;
+            }
+          }
+          if (!isSubmitViable) {
+            break;
+          }
+        }
+        if (isSubmitViable) {
+          settingsData.boxes = [...tempSettingData.boxes];
+          settingsData.skus = [...tempSettingData.skus];
+          showToast("All changes saved!");
+          closeModal();
+          initConfigPanel();
+          initSkuList();
+          return;
+        }
+        const errorElement = document.getElementById(errorElementId);
+        errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+
       // Open/Close logic
       btnSettings.onclick = () => {
+        tempSettingData.boxes = settingsData.boxes.map((box) => ({
+          ...box,
+          isError: checkForError(box),
+        }));
+        tempSettingData.skus = settingsData.skus.map((sku) => ({
+          ...sku,
+          isError: checkForError(sku),
+        }));
         renderBoxTemplates();
         renderSkus();
         renderBoxOptions();
@@ -3856,8 +4236,7 @@
       document.getElementById("close-modal").onclick = closeModal;
       document.getElementById("cancel-settings").onclick = closeModal;
       document.getElementById("save-settings").onclick = () => {
-        showToast("All changes saved!");
-        setTimeout(closeModal, 800);
+        handleSaveChanges();
       };
 
       // Data is loaded from localStorage
@@ -3900,13 +4279,13 @@
         }
 
         activeSkus.forEach((b) => {
-          const id = b.sku_id || b.id;
+          const id = b.id;
           if (S.qty[id] === undefined) S.qty[id] = 0;
         });
 
         el.innerHTML = activeSkus
           .map((b) => {
-            const id = b.sku_id || b.id;
+            const id = b.id;
             const skuColor = b.color || "#3B82F6";
             return `
                     <div class="sku-row${S.qty[id] > 0 ? " active" : ""}" id="row-${id}">
@@ -4173,7 +4552,7 @@
         let html = "";
 
         settingsData.skus.forEach((sku) => {
-          const placed = counts[sku.sku_id] || 0;
+          const placed = counts[sku.id] || 0;
 
           if (placed > 0) {
             html += `
@@ -4766,7 +5145,7 @@
         settingsData.skus
           .filter((b) => b.active)
           .forEach((b) => {
-            const id = b.sku_id || b.id;
+            const id = b.id;
             if (S.qty[id] > 0) {
               for (let i = 0; i < S.qty[id]; i++) rawSkus.push({ ...b, id });
             }

@@ -3424,13 +3424,13 @@
       function normalizeBox(b) {
         return {
           id:        b.id        || "box_" + Date.now(),
-          name:      b.name      || "New Box",
-          type:      b.type      || "STD",
-          width:     Number(b.width)     || 244,
-          length:    Number(b.length)    || 315,
-          height:    Number(b.height)    || 160,
+          name:      b.name      || "",
+          type:      b.type      || "",
+          width:     Number(b.width)     || 0,
+          length:    Number(b.length)    || 0,
+          height:    Number(b.height)    || 0,
           weight:    Number(b.weight)    || 0,
-          loadLimit: Number(b.loadLimit) || 15,
+          loadLimit: Number(b.loadLimit) || 0,
           active:    b.active !== false,
         };
       }

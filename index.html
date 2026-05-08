@@ -1405,35 +1405,62 @@
 
       /* ── CONFIRM DIALOG ── */
       .confirm-overlay {
-        position: fixed; inset: 0;
-        background: rgba(15,23,42,0.5);
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.5);
         backdrop-filter: blur(4px);
         z-index: 99999;
-        display: flex; align-items: center; justify-content: center;
-        opacity: 0; transition: opacity 0.15s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.15s ease;
       }
-      .confirm-overlay.show { opacity: 1; }
+      .confirm-overlay.show {
+        opacity: 1;
+      }
       .confirm-box {
         background: var(--bg-panel);
         border: 1px solid var(--border);
         border-radius: 14px;
         padding: 28px 28px 22px;
         width: 340px;
-        box-shadow: 0 20px 40px -8px rgba(0,0,0,0.25);
+        box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.25);
         transform: scale(0.92);
-        transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1);
-        display: flex; flex-direction: column; gap: 18px;
+        transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
       }
-      .confirm-overlay.show .confirm-box { transform: scale(1); }
+      .confirm-overlay.show .confirm-box {
+        transform: scale(1);
+      }
       .confirm-box-icon {
-        width: 40px; height: 40px; border-radius: 10px;
-        background: rgba(255,71,87,0.1);
-        display: flex; align-items: center; justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: rgba(255, 71, 87, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
         flex-shrink: 0;
       }
-      .confirm-box-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
-      .confirm-box-msg   { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
-      .confirm-box-actions { display: flex; gap: 10px; justify-content: flex-end; }
+      .confirm-box-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+      }
+      .confirm-box-msg {
+        font-size: 13px;
+        color: var(--text-secondary);
+        line-height: 1.5;
+      }
+      .confirm-box-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+      }
 
       @keyframes highlightRecord {
         0% {
@@ -1658,6 +1685,21 @@
         font-size: 13px;
         font-weight: 600;
         color: var(--text-secondary);
+      }
+
+      .btn-close {
+        background: var(--primary);
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
       }
 
       .btn-add {
@@ -3415,7 +3457,16 @@
       let searchQueries = { boxes: "", skus: "" };
 
       // ─── HELPERS ────────────────────────────────
-      const SKU_COLORS = ["#3B82F6","#10B981","#F59E0B","#EF4444","#8B5CF6","#EC4899","#F97316","#06B6D4"];
+      const SKU_COLORS = [
+        "#3B82F6",
+        "#10B981",
+        "#F59E0B",
+        "#EF4444",
+        "#8B5CF6",
+        "#EC4899",
+        "#F97316",
+        "#06B6D4",
+      ];
 
       function getEntityId(item) {
         return item.sku_id || item.id;
@@ -3423,29 +3474,31 @@
 
       function normalizeBox(b) {
         return {
-          id:        b.id        || "box_" + Date.now(),
-          name:      b.name      || "",
-          type:      b.type      || "",
-          width:     Number(b.width)     || 0,
-          length:    Number(b.length)    || 0,
-          height:    Number(b.height)    || 0,
-          weight:    Number(b.weight)    || 0,
+          id: b.id || "box_" + Date.now(),
+          name: b.name || "",
+          type: b.type || "",
+          width: Number(b.width) || 0,
+          length: Number(b.length) || 0,
+          height: Number(b.height) || 0,
+          weight: Number(b.weight) || 0,
           loadLimit: Number(b.loadLimit) || 0,
-          active:    b.active !== false,
+          active: b.active !== false,
         };
       }
 
       function normalizeSku(s) {
         const id = s.sku_id || s.id || "sku_" + Date.now();
         return {
-          id:     id,
+          id: id,
           sku_id: id,
-          name:   s.name   || "New SKU",
-          width:  Number(s.width)  || 10,
+          name: s.name || "New SKU",
+          width: Number(s.width) || 10,
           length: Number(s.length) || 10,
           height: Number(s.height) || 10,
           weight: Number(s.weight) || 1,
-          color:  s.color  || SKU_COLORS[Math.floor(Math.random() * SKU_COLORS.length)],
+          color:
+            s.color ||
+            SKU_COLORS[Math.floor(Math.random() * SKU_COLORS.length)],
           active: s.active !== false,
         };
       }
@@ -3455,7 +3508,7 @@
         const data = getLocalData();
         // Normalize all loaded records to guarantee no missing fields
         settingsData.boxes = (data.boxes || []).map(normalizeBox);
-        settingsData.skus  = (data.skus  || []).map(normalizeSku);
+        settingsData.skus = (data.skus || []).map(normalizeSku);
         window.settingsData = settingsData;
 
         renderAll();
@@ -3499,21 +3552,25 @@
         const q = searchQueries.boxes.toLowerCase();
         const filtered = settingsData.boxes.filter(
           (p) =>
-            (p.name  || "").toLowerCase().includes(q) ||
-            (p.type  || "").toLowerCase().includes(q),
+            (p.name || "").toLowerCase().includes(q) ||
+            (p.type || "").toLowerCase().includes(q),
         );
 
         if (filtered.length === 0 && q) {
-          grid.innerHTML = '<div class="fcst-empty" style="grid-column: 1/-1">No boxes match your search.</div>';
+          grid.innerHTML =
+            '<div class="fcst-empty" style="grid-column: 1/-1">No boxes match your search.</div>';
           return;
         }
 
         if (filtered.length === 0) {
-          grid.innerHTML = '<div class="fcst-empty" style="grid-column: 1/-1">No boxes yet. Click "+ Add Box" to create one.</div>';
+          grid.innerHTML =
+            '<div class="fcst-empty" style="grid-column: 1/-1">No boxes yet. Click "+ Add Box" to create one.</div>';
           return;
         }
 
-        grid.innerHTML = filtered.map((p) => `
+        grid.innerHTML = filtered
+          .map(
+            (p) => `
           <div class="entity-card ${p._new ? "new-record-highlight" : ""}" data-id="${p.id}" ${p._new ? 'data-just-added="true"' : ""}>
             <div class="card-row">
               <div class="field-group full">
@@ -3560,7 +3617,9 @@
               </button>
             </div>
           </div>
-        `).join("");
+        `,
+          )
+          .join("");
 
         const firstCard = grid.firstElementChild;
         if (firstCard && firstCard.dataset.justAdded === "true") {
@@ -3582,18 +3641,21 @@
         );
 
         if (filtered.length === 0 && q) {
-          grid.innerHTML = '<div class="fcst-empty" style="grid-column: 1/-1">No SKUs match your search.</div>';
+          grid.innerHTML =
+            '<div class="fcst-empty" style="grid-column: 1/-1">No SKUs match your search.</div>';
           return;
         }
 
         if (filtered.length === 0) {
-          grid.innerHTML = '<div class="fcst-empty" style="grid-column: 1/-1">No SKUs yet. Click "+ Add SKU" to create one.</div>';
+          grid.innerHTML =
+            '<div class="fcst-empty" style="grid-column: 1/-1">No SKUs yet. Click "+ Add SKU" to create one.</div>';
           return;
         }
 
-        grid.innerHTML = filtered.map((b) => {
-          const bid = getEntityId(b);
-          return `
+        grid.innerHTML = filtered
+          .map((b) => {
+            const bid = getEntityId(b);
+            return `
             <div class="entity-card ${b._new ? "new-record-highlight" : ""}" data-id="${bid}" ${b._new ? 'data-just-added="true"' : ""}>
               <div class="card-row">
                 <div class="field-group full">
@@ -3641,7 +3703,8 @@
               </div>
             </div>
           `;
-        }).join("");
+          })
+          .join("");
 
         const firstCard = grid.firstElementChild;
         if (firstCard && firstCard.dataset.justAdded === "true") {
@@ -3665,9 +3728,14 @@
 
       // ─── CRUD OPERATIONS ────────────────────────
       function addEntity(type) {
-        const newObj = type === "boxes"
-          ? normalizeBox({ id: "box_" + Date.now(), _new: true })
-          : normalizeSku({ id: "sku_" + Date.now(), sku_id: "sku_" + Date.now(), _new: true });
+        const newObj =
+          type === "boxes"
+            ? normalizeBox({ id: "box_" + Date.now(), _new: true })
+            : normalizeSku({
+                id: "sku_" + Date.now(),
+                sku_id: "sku_" + Date.now(),
+                _new: true,
+              });
 
         newObj._new = true;
         settingsData[type].unshift(newObj);
@@ -3691,7 +3759,9 @@
 
         const newId = getEntityId(newObj);
         setTimeout(() => {
-          const card = document.querySelector(`.entity-card[data-id="${newId}"]`);
+          const card = document.querySelector(
+            `.entity-card[data-id="${newId}"]`,
+          );
           if (card) {
             card.scrollIntoView({ behavior: "smooth", block: "center" });
             card.querySelector("input")?.focus();
@@ -3751,9 +3821,16 @@
           overlay.classList.remove("show");
           setTimeout(() => overlay.remove(), 180);
         };
-        overlay.querySelector("#confirm-cancel").addEventListener("click", close);
-        overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
-        overlay.querySelector("#confirm-ok").addEventListener("click", () => { close(); onConfirm(); });
+        overlay
+          .querySelector("#confirm-cancel")
+          .addEventListener("click", close);
+        overlay.addEventListener("click", (e) => {
+          if (e.target === overlay) close();
+        });
+        overlay.querySelector("#confirm-ok").addEventListener("click", () => {
+          close();
+          onConfirm();
+        });
       }
 
       // ─── MODAL CONTROLS ─────────────────────────
@@ -3823,7 +3900,7 @@
                     </div>
                 </div>
                 <div class="modal-ftr">
-                    <button class="btn-manual" style="background:#eee; color:#333; border:none" id="cancel-settings">Close</button>
+                    <button class="btn-close" style="background:#eee; color:#333; border:none" id="cancel-settings">Close</button>
                     <button class="btn-add" id="save-settings">Save All Changes</button>
                 </div>
             </div>

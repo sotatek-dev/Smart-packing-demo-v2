@@ -11,11 +11,30 @@ the lowest freight cost.
 
 ```bash
 npm install
-npm start          # listens on PORT (default 3000)
+npm start          # production: node src/server.js, listens on PORT (default 3000)
+npm run dev         # development: nodemon src/server.js, auto-restarts on changes in src/
 ```
 
-Interactive API docs (Swagger UI) are served at `/api-docs`; the raw OpenAPI
-JSON spec is available at `/api-docs.json`.
+## API Docs (Swagger)
+
+Interactive API docs are served by Swagger UI once the server is running:
+
+- **Swagger UI:** http://localhost:3000/api-docs
+- **Raw OpenAPI 3.0 spec (JSON):** http://localhost:3000/api-docs.json
+
+Start the server (`npm start` or `npm run dev`) and open the Swagger UI link
+in your browser to explore and call every endpoint — boxes/SKUs CRUD,
+settings, `/api/optimize`, and `/api/health` — directly from the page,
+including example request/response bodies for each schema.
+
+The spec is generated from JSDoc `@swagger` annotations above each route in
+`src/server.js`, built with `swagger-jsdoc`, and rendered with
+`swagger-ui-express` (see `src/swagger.js` for the base spec/schema
+definitions). If you add or change an endpoint, update its `@swagger` block
+and the docs regenerate automatically the next time the server starts.
+
+If you're running on a different port (`PORT=xxxx npm start`), swap `3000`
+for that port in the URLs above.
 
 ## Data model
 
@@ -35,7 +54,7 @@ environment variable. See `src/store.js`.
 
 ## Endpoints
 
-### Boxes / SKUs CRUD (in-memory store)
+### Boxes / SKUs CRUD (file-based store)
 - `GET /api/boxes` / `POST /api/boxes` / `PUT /api/boxes/:id` / `DELETE /api/boxes/:id`
 - `GET /api/skus` / `POST /api/skus` / `PUT /api/skus/:id` / `DELETE /api/skus/:id`
 - `GET /api/settings` — `{ boxes, skus }` combined (matches the frontend's `fetchSettings` shape)

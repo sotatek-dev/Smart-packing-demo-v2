@@ -61,11 +61,11 @@ environment variable. See `src/store.js`.
 - `PUT /api/settings` — bulk replace boxes/skus
 
 ### Optimize
-`POST /api/optimize`
+Two separate endpoints depending on how you want to call it:
 
-Two ways to call it:
-
-**Stateless** — pass everything in the request body (each SKU needs a `qty`):
+**`POST /api/optimize/stateless`** — pass everything in the request body
+(each SKU needs a `qty`); nothing is read from or written to the stored
+boxes/SKUs:
 ```json
 {
   "boxes": [{ "id": "b1", "name": "Pallet", "width": 100, "length": 100, "height": 100, "weight": 5, "loadLimit": 500 }],
@@ -73,13 +73,13 @@ Two ways to call it:
 }
 ```
 
-**Stateful** — use boxes/SKUs already saved via the CRUD endpoints, and just
-supply quantities by SKU id:
+**`POST /api/optimize/stateful`** — uses boxes/SKUs already saved via the
+CRUD endpoints; just supply quantities by SKU id:
 ```json
 { "quantities": { "sku_abc123": 10 } }
 ```
 
-Response shape:
+Both endpoints return the same response shape:
 ```json
 {
   "boxes": [

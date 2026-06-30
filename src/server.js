@@ -317,27 +317,39 @@ app.put("/api/settings", (req, res) => {
 });
 
 // ─── Optimize ────────────────────────────────────────────────────────────
-// Stateless mode: pass `boxes` and `skus` (each sku needs a `qty`) directly.
-// Stateful mode: omit them and pass `quantities: { [skuId]: qty }` to use
-// the boxes/skus already stored via the CRUD endpoints above.
+// Shared core: validates boxes/skus and runs the packing engine.
+function runOptimize(boxes, skus) {
+  if (!boxes.length) {
+    const err = new Error("No active box templates found");
+    err.status = 400;
+    throw err;
+  }
+  if (!skus.length) {
+    const err = new Error("Please select at least one SKU with quantity > 0");
+    err.status = 400;
+    throw err;
+  }
+
+  boxes.forEach((b) => validateDims(b, "Box"));
+  skus.forEach((s) => validateDims(s, "SKU"));
+
+  return runPacking(skus, boxes);
+}
+
 /**
  * @swagger
- * /api/optimize:
+ * /api/optimize/stateless:
  *   post:
- *     summary: Run the packing optimizer
+ *     summary: Run the packing optimizer (stateless)
  *     description: >
- *       Stateless mode — pass `boxes` and `skus` (each sku needs a `qty`) directly in the body.
- *       Stateful mode — omit them and pass `quantities: { [skuId]: qty }` to use the
- *       boxes/skus already stored via the CRUD endpoints.
+ *       Pass `boxes` and `skus` (each sku needs a `qty`) directly in the request body.
+ *       Nothing is read from or written to the stored boxes/skus.
  *     tags: [Optimize]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
- *           schema:
- *             oneOf:
- *               - { $ref: '#/components/schemas/OptimizeRequestStateless' }
- *               - { $ref: '#/components/schemas/OptimizeRequestStateful' }
+ *           schema: { $ref: '#/components/schemas/OptimizeRequestStateless' }
  *     responses:
  *       200:
  *         description: Packing result
@@ -350,42 +362,67 @@ app.put("/api/settings", (req, res) => {
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-app.post("/api/optimize", (req, res) => {
+app.post("/api/optimize/stateless", (req, res) => {
   try {
-    let { boxes, skus, quantities } = req.body || {};
+    const { boxes: boxesIn, skus: skusIn } = req.body || {};
 
-    if (!boxes) {
-      boxes = store.boxes.filter((b) => b.active);
-    } else {
-      boxes = boxes.filter((b) => b.active !== false).map(normalizeBox);
+    if (!Array.isArray(boxesIn) || !Array.isArray(skusIn)) {
+      return res.status(400).json({ error: "Stateless mode requires both `boxes` and `skus` arrays" });
     }
 
-    if (!skus) {
-      const activeSkus = store.skus.filter((s) => s.active);
-      skus = activeSkus
-        .map((s) => ({ ...s, qty: (quantities && quantities[s.id]) || 0 }))
-        .filter((s) => s.qty > 0);
-    } else {
-      skus = skus
-        .filter((s) => s.active !== false)
-        .map((s) => ({ ...normalizeSku(s), qty: Number(s.qty) || 0 }))
-        .filter((s) => s.qty > 0);
-    }
+    const boxes = boxesIn.filter((b) => b.active !== false).map(normalizeBox);
+    const skus = skusIn
+      .filter((s) => s.active !== false)
+      .map((s) => ({ ...normalizeSku(s), qty: Number(s.qty) || 0 }))
+      .filter((s) => s.qty > 0);
 
-    if (!boxes.length) {
-      return res.status(400).json({ error: "No active box templates found" });
-    }
-    if (!skus.length) {
-      return res.status(400).json({ error: "Please select at least one SKU with quantity > 0" });
-    }
-
-    boxes.forEach((b) => validateDims(b, "Box"));
-    skus.forEach((s) => validateDims(s, "SKU"));
-
-    const result = runPacking(skus, boxes);
+    const result = runOptimize(boxes, skus);
     res.json(result);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(err.status || 400).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/optimize/stateful:
+ *   post:
+ *     summary: Run the packing optimizer (stateful)
+ *     description: >
+ *       Uses the boxes/skus already saved via the CRUD endpoints. Pass
+ *       `quantities: { [skuId]: qty }` to specify how many of each saved SKU to pack.
+ *     tags: [Optimize]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { $ref: '#/components/schemas/OptimizeRequestStateful' }
+ *     responses:
+ *       200:
+ *         description: Packing result
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/OptimizeResponse' }
+ *       400:
+ *         description: Invalid request (no active boxes/skus, bad dimensions, etc.)
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Error' }
+ */
+app.post("/api/optimize/stateful", (req, res) => {
+  try {
+    const { quantities } = req.body || {};
+
+    const boxes = store.boxes.filter((b) => b.active);
+    const skus = store.skus
+      .filter((s) => s.active)
+      .map((s) => ({ ...s, qty: (quantities && quantities[s.id]) || 0 }))
+      .filter((s) => s.qty > 0);
+
+    const result = runOptimize(boxes, skus);
+    res.json(result);
+  } catch (err) {
+    res.status(err.status || 400).json({ error: err.message });
   }
 });
 

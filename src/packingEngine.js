@@ -553,7 +553,7 @@ function runPacking(skus, boxes) {
       boxName: p.name,
       layout,
       layerDefs,
-      totalWeight: runningWeight,
+      totalWeight: runningWeight + (pb.dimensions.boxWeight || 0),
       actualHeight,
       placedQty,
       freightCost: calculateFreightCostForPackedBox(pb),

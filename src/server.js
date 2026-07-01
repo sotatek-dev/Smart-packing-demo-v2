@@ -5,6 +5,7 @@ const { randomUUID } = require("crypto");
 const { runPacking } = require("./packingEngine");
 const { store, persist } = require("./store");
 const swaggerSpec = require("./swagger");
+const path = require("path")
 
 const app = express();
 app.use(cors());
@@ -12,6 +13,12 @@ app.use(express.json({ limit: "5mb" }));
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.get("/api-docs.json", (req, res) => res.json(swaggerSpec));
+
+// ─── Frontend (static) ──────────────────────────────────────────────────
+// Serves public/index.html at http://localhost:PORT/ — the API-integrated
+// version of the packing optimizer UI. Same-origin, so no CORS config
+// needed on the client side.
+app.use(express.static(path.join(__dirname, "..", "public")));
 
 function normalizeBox(b) {
   return {
@@ -336,56 +343,13 @@ function runOptimize(boxes, skus) {
   return runPacking(skus, boxes);
 }
 
+// ─── Optimize ────────────────────────────────────────────────────────────
+// Stateless mode: pass `boxes` and `skus` (each sku needs a `qty`) directly.
+// Stateful mode: omit them and pass `quantities: { [skuId]: qty }` to use
+// the boxes/skus already stored via the CRUD endpoints above.
 /**
  * @swagger
- * /api/optimize/stateless:
- *   post:
- *     summary: Run the packing optimizer (stateless)
- *     description: >
- *       Pass `boxes` and `skus` (each sku needs a `qty`) directly in the request body.
- *       Nothing is read from or written to the stored boxes/skus.
- *     tags: [Optimize]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema: { $ref: '#/components/schemas/OptimizeRequestStateless' }
- *     responses:
- *       200:
- *         description: Packing result
- *         content:
- *           application/json:
- *             schema: { $ref: '#/components/schemas/OptimizeResponse' }
- *       400:
- *         description: Invalid request (no active boxes/skus, bad dimensions, etc.)
- *         content:
- *           application/json:
- *             schema: { $ref: '#/components/schemas/Error' }
- */
-app.post("/api/optimize/stateless", (req, res) => {
-  try {
-    const { boxes: boxesIn, skus: skusIn } = req.body || {};
-
-    if (!Array.isArray(boxesIn) || !Array.isArray(skusIn)) {
-      return res.status(400).json({ error: "Stateless mode requires both `boxes` and `skus` arrays" });
-    }
-
-    const boxes = boxesIn.filter((b) => b.active !== false).map(normalizeBox);
-    const skus = skusIn
-      .filter((s) => s.active !== false)
-      .map((s) => ({ ...normalizeSku(s), qty: Number(s.qty) || 0 }))
-      .filter((s) => s.qty > 0);
-
-    const result = runOptimize(boxes, skus);
-    res.json(result);
-  } catch (err) {
-    res.status(err.status || 400).json({ error: err.message });
-  }
-});
-
-/**
- * @swagger
- * /api/optimize/stateful:
+ * /api/optimize:
  *   post:
  *     summary: Run the packing optimizer (stateful)
  *     description: >
@@ -409,20 +373,42 @@ app.post("/api/optimize/stateless", (req, res) => {
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-app.post("/api/optimize/stateful", (req, res) => {
+app.post("/api/optimize", (req, res) => {
   try {
-    const { quantities } = req.body || {};
+    let { boxes, skus, quantities } = req.body || {};
 
-    const boxes = store.boxes.filter((b) => b.active);
-    const skus = store.skus
-      .filter((s) => s.active)
-      .map((s) => ({ ...s, qty: (quantities && quantities[s.id]) || 0 }))
-      .filter((s) => s.qty > 0);
+    if (!boxes) {
+      boxes = store.boxes.filter((b) => b.active);
+    } else {
+      boxes = boxes.filter((b) => b.active !== false).map(normalizeBox);
+    }
 
-    const result = runOptimize(boxes, skus);
+    if (!skus) {
+      const activeSkus = store.skus.filter((s) => s.active);
+      skus = activeSkus
+        .map((s) => ({ ...s, qty: (quantities && quantities[s.id]) || 0 }))
+        .filter((s) => s.qty > 0);
+    } else {
+      skus = skus
+        .filter((s) => s.active !== false)
+        .map((s) => ({ ...normalizeSku(s), qty: Number(s.qty) || 0 }))
+        .filter((s) => s.qty > 0);
+    }
+
+    if (!boxes.length) {
+      return res.status(400).json({ error: "No active box templates found" });
+    }
+    if (!skus.length) {
+      return res.status(400).json({ error: "Please select at least one SKU with quantity > 0" });
+    }
+
+    boxes.forEach((b) => validateDims(b, "Box"));
+    skus.forEach((s) => validateDims(s, "SKU"));
+
+    const result = runPacking(skus, boxes);
     res.json(result);
   } catch (err) {
-    res.status(err.status || 400).json({ error: err.message });
+    res.status(400).json({ error: err.message });
   }
 });
 
@@ -447,7 +433,11 @@ app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 const PORT = process.env.PORT || 3000;
 if (require.main === module) {
   app.listen(PORT, () => {
-    console.log(`Packing engine API listening on port ${PORT}`);
+    console.log(`
+      Web running at: http://localhost:${PORT}/\n
+      Swagger: http://localhost:${PORT}/api-docs/
+    `);
+
   });
 }
 

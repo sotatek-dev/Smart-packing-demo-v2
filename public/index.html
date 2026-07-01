@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Packing Optimizer</title>
+    <title>Packing Optimizer (API)</title>
     <link
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
@@ -1883,7 +1883,7 @@
             />
           </svg>
         </div>
-        Packing Optimizer
+        Packing Optimizer <span style="font-size:11px;font-weight:600;color:var(--text-muted);margin-left:4px">· API</span>
       </div>
       <div class="hdr-right">
         <div class="mode-chip" id="mode-chip">AUTO MODE</div>
@@ -3259,198 +3259,46 @@
     </script>
 
     <script>
-      // ─── LOCAL DATA STORE (replaces Supabase) ───
-      const DEFAULT_DATA = {
-        boxes: [
-          {
-            id: "C02P",
-            name: "2 Pack POD Self Locking",
-            type: "C02P",
-            width: 8.9,
-            length: 14.2,
-            height: 11,
-            weight: 0.28,
-            loadLimit: 15,
-            active: true,
-          },
-          {
-            id: "C04P",
-            name: "4 Pack POD Self Locking",
-            type: "C04P",
-            width: 14.2,
-            length: 17.3,
-            height: 11,
-            weight: 0.54,
-            loadLimit: 15,
-            active: true,
-          },
-          {
-            id: "C06P",
-            name: "6 Pack POD Self Locking",
-            type: "C06P",
-            width: 16.4,
-            length: 22.8,
-            height: 11,
-            weight: 0.82,
-            loadLimit: 15,
-            active: true,
-          },
-          {
-            id: "C10P",
-            name: "10 Pack POD Self Locking",
-            type: "C10P",
-            width: 16.4,
-            length: 34.5,
-            height: 11,
-            weight: 1.24,
-            loadLimit: 15,
-            active: true,
-          },
-          {
-            id: "C15P",
-            name: "15 Pack POD Self Locking",
-            type: "C15P",
-            width: 23.9,
-            length: 36.3,
-            height: 11,
-            weight: 1.91,
-            loadLimit: 15,
-            active: true,
-          },
-          {
-            id: "C25R",
-            name: "25 Pack POD RSC",
-            type: "C25R",
-            width: 33.4,
-            length: 38.9,
-            height: 11,
-            weight: 2.86,
-            loadLimit: 15,
-            active: true,
-          },
-          {
-            id: "C50R",
-            name: "50 Pack POD RSC",
-            type: "C50R",
-            width: 33.4,
-            length: 38.9,
-            height: 19.3,
-            weight: 5.02,
-            loadLimit: 15,
-            active: true,
-          },
-          {
-            id: "C40R",
-            name: "40 Pack POD RSC",
-            type: "C40R",
-            width: 27,
-            length: 38.9,
-            height: 19.3,
-            weight: 4.05,
-            loadLimit: 15,
-            active: true,
-          },
-        ],
-        skus: [
-          {
-            sku_id: "T2N651",
-            name: "T2N651",
-            width: 7.62,
-            length: 9.65,
-            height: 7.62,
-            weight: 0.045,
-            color: "#3B82F6",
-            active: true,
-          },
-          {
-            sku_id: "TW2R42500",
-            name: "TW2R42500",
-            width: 7.49,
-            length: 8.61,
-            height: 6.4,
-            weight: 0.054,
-            color: "#10B981",
-            active: true,
-          },
-          {
-            sku_id: "TW2W99600VQ",
-            name: "TW2W99600VQ",
-            width: 10.39,
-            length: 10.59,
-            height: 7.8,
-            weight: 0.22,
-            color: "#F59E0B",
-            active: true,
-          },
-          {
-            sku_id: "TW2R63100",
-            name: "TW2R63100",
-            width: 10.01,
-            length: 3.99,
-            height: 6,
-            weight: 0.045,
-            color: "#EF4444",
-            active: true,
-          },
-          {
-            sku_id: "T2P370",
-            name: "T2P370",
-            width: 3.1,
-            length: 19.1,
-            height: 0.79,
-            weight: 0.318,
-            color: "#8B5CF6",
-            active: true,
-          },
-        ],
-      };
+      // ─── API CONFIGURATION ───────────────────────
+      // Base URL of the packing-engine-api Express backend (see server.js
+      // / packingEngine.js). Defaults to same-origin (works out of the box
+      // when this page is served by that same Express server via
+      // express.static). Override by setting window.PACKING_API_BASE
+      // before this script runs if the API is hosted elsewhere.
+      const API_BASE = window.PACKING_API_BASE || "";
 
-      function localLoad() {
-        try {
-          const raw = localStorage.getItem("packingOptimizerData");
-          return raw ? JSON.parse(raw) : null;
-        } catch {
-          return null;
-        }
-      }
-
-      function localSave(data) {
-        try {
-          localStorage.setItem("packingOptimizerData", JSON.stringify(data));
-        } catch {}
-      }
-
-      function getLocalData() {
-        const loaded = localLoad();
-        if (loaded) {
-          // Migrate old 'pallets' key to 'boxes' (box templates)
-          if (loaded.pallets && !loaded.boxes) {
-            loaded.boxes = loaded.pallets;
-            delete loaded.pallets;
-          }
-          if (!loaded.boxes)
-            loaded.boxes = JSON.parse(JSON.stringify(DEFAULT_DATA.boxes));
-          // Migrate old box templates without height field
-          loaded.boxes.forEach((p) => {
-            if (!p.height) p.height = 160;
-          });
-          // Migrate old 'boxes' key (SKUs) to 'skus'
-          // Note: after pallets->boxes migration above, loaded.boxes is now box templates
-          // SKUs were saved under 'skus' key — just ensure it exists
-          if (!loaded.skus) loaded.skus = [];
-          // Drop stale positions key
-          delete loaded.positions;
-          return loaded;
-        }
-        return JSON.parse(JSON.stringify(DEFAULT_DATA));
-      }
-
-      function saveLocalData() {
-        localSave({
-          boxes: settingsData.boxes,
-          skus: settingsData.skus,
+      async function apiRequest(path, options = {}) {
+        const res = await fetch(API_BASE + path, {
+          headers: { "Content-Type": "application/json" },
+          ...options,
         });
+        let body = null;
+        try {
+          body = await res.json();
+        } catch {
+          body = null;
+        }
+        if (!res.ok) {
+          throw new Error((body && body.error) || res.statusText || "Request failed");
+        }
+        return body;
       }
+
+      const api = {
+        getSettings: () => apiRequest("/api/settings"),
+        createBox: (box) =>
+          apiRequest("/api/boxes", { method: "POST", body: JSON.stringify(box) }),
+        updateBox: (id, patch) =>
+          apiRequest(`/api/boxes/${id}`, { method: "PUT", body: JSON.stringify(patch) }),
+        deleteBox: (id) => apiRequest(`/api/boxes/${id}`, { method: "DELETE" }),
+        createSku: (sku) =>
+          apiRequest("/api/skus", { method: "POST", body: JSON.stringify(sku) }),
+        updateSku: (id, patch) =>
+          apiRequest(`/api/skus/${id}`, { method: "PUT", body: JSON.stringify(patch) }),
+        deleteSku: (id) => apiRequest(`/api/skus/${id}`, { method: "DELETE" }),
+        optimize: (payload) =>
+          apiRequest("/api/optimize", { method: "POST", body: JSON.stringify(payload) }),
+      };
 
       let settingsData = { boxes: [], skus: [] };
       window.settingsData = settingsData;
@@ -3503,17 +3351,20 @@
         };
       }
 
-      // ─── FETCH (local) ──────────────────────────
+      // ─── FETCH (backend API) ──────────────────────
       async function fetchSettings() {
-        const data = getLocalData();
-        // Normalize all loaded records to guarantee no missing fields
-        settingsData.boxes = (data.boxes || []).map(normalizeBox);
-        settingsData.skus = (data.skus || []).map(normalizeSku);
-        window.settingsData = settingsData;
+        try {
+          const data = await api.getSettings();
+          settingsData.boxes = (data.boxes || []).map(normalizeBox);
+          settingsData.skus = (data.skus || []).map(normalizeSku);
+          window.settingsData = settingsData;
 
-        renderAll();
-        initConfigPanel();
-        initSkuList();
+          renderAll();
+          initConfigPanel();
+          initSkuList();
+        } catch (err) {
+          showToast("Failed to load data from API: " + err.message, "error");
+        }
       }
 
       function renderAll() {
@@ -3726,20 +3577,26 @@
         if (type === "skus") renderSkus();
       }
 
-      // ─── CRUD OPERATIONS ────────────────────────
-      function addEntity(type) {
-        const newObj =
+      // ─── CRUD OPERATIONS (via backend API) ──────
+      async function addEntity(type) {
+        const draft =
           type === "boxes"
-            ? normalizeBox({ id: "box_" + Date.now(), _new: true })
-            : normalizeSku({
-                id: "sku_" + Date.now(),
-                sku_id: "sku_" + Date.now(),
-                _new: true,
-              });
+            ? { name: "New Box", type: "", width: 100, length: 100, height: 100, weight: 1, loadLimit: 100, active: true }
+            : { name: "New SKU", width: 10, length: 10, height: 10, weight: 1, active: true };
 
-        newObj._new = true;
-        settingsData[type].unshift(newObj);
-        saveLocalData();
+        let created;
+        try {
+          created =
+            type === "boxes"
+              ? normalizeBox(await api.createBox(draft))
+              : normalizeSku(await api.createSku(draft));
+        } catch (err) {
+          showToast(`Failed to add ${type === "boxes" ? "box" : "SKU"}: ` + err.message, "error");
+          return;
+        }
+
+        created._new = true;
+        settingsData[type].unshift(created);
         renderAll();
         initSkuList();
         showToast(`New ${type === "boxes" ? "box" : "SKU"} added!`);
@@ -3757,11 +3614,9 @@
           pane.classList.toggle("active", pane.id === tabId);
         });
 
-        const newId = getEntityId(newObj);
+        const newId = getEntityId(created);
         setTimeout(() => {
-          const card = document.querySelector(
-            `.entity-card[data-id="${newId}"]`,
-          );
+          const card = document.querySelector(`.entity-card[data-id="${newId}"]`);
           if (card) {
             card.scrollIntoView({ behavior: "smooth", block: "center" });
             card.querySelector("input")?.focus();
@@ -3769,27 +3624,43 @@
         }, 60);
       }
 
-      function updateEntity(type, id, field, value) {
-        const item = settingsData[type].find(
-          (i) => i.id === id || i.sku_id === id,
-        );
+      async function updateEntity(type, id, field, value) {
+        const item = settingsData[type].find((i) => i.id === id || i.sku_id === id);
         if (!item) return;
-        item[field] = value;
-        saveLocalData();
+
+        const prevValue = item[field];
+        item[field] = value; // optimistic UI update
+
+        try {
+          const updated =
+            type === "boxes"
+              ? normalizeBox(await api.updateBox(id, { [field]: value }))
+              : normalizeSku(await api.updateSku(id, { [field]: value }));
+          Object.assign(item, updated);
+        } catch (err) {
+          item[field] = prevValue; // rollback on failure
+          showToast("Failed to save change: " + err.message, "error");
+        }
+
         if (type === "skus") initSkuList();
         else initConfigPanel();
       }
 
       function deleteEntity(type, id) {
         const label = type === "boxes" ? "box" : "SKU";
-        showConfirm(`Are you sure you want to delete this ${label}?`, () => {
-          settingsData[type] = settingsData[type].filter(
-            (i) => i.id !== id && i.sku_id !== id,
-          );
-          saveLocalData();
-          renderAll();
-          initSkuList();
-          showToast("Record deleted");
+        showConfirm(`Are you sure you want to delete this ${label}?`, async () => {
+          try {
+            if (type === "boxes") await api.deleteBox(id);
+            else await api.deleteSku(id);
+            settingsData[type] = settingsData[type].filter(
+              (i) => i.id !== id && i.sku_id !== id,
+            );
+            renderAll();
+            initSkuList();
+            showToast("Record deleted");
+          } catch (err) {
+            showToast("Failed to delete: " + err.message, "error");
+          }
         });
       }
 
@@ -4270,717 +4141,80 @@
           '<div style="font-size:12px; color:var(--text-muted)">No items in this box</div>';
       }
 
-      // ─── PACKING ENGINE ────────────────
-      //
-      // Runs three strategies and picks the winner by minimum
-      // total container-volume used (= densest packing in the box).
-      //
-      //   Strategy 1 — packWithSmallestFirst : First-Fit Decreasing (FFD)
-      //   Strategy 2 — packWithMaxFill       : Best-Fit, max space utilisation
-      //   Strategy 3 — packBySimilarSize     : Similar-size clustering
-      //
-      // Each strategy uses tryPackInSku → findBestPlacement / updateSpaces
-      // which implement the Guillotine-Cut algorithm with gravity-aware
-      // space sorting and full 6-orientation rotation support.
-      //
-      // Axis mapping (engine → TimeX2 layout item)
-      //   item.length → layout.w  (box x-axis / width)
-      //   item.width  → layout.d  (box z-axis / length/depth)
-      //   item.height → layout.h  (y-axis / upward)
-      //   placement.x → layout.x
-      //   placement.z → layout.z  (depth position in box)
-      //   placement.y → layout.y  (height off box floor, used for layers)
-      // ─────────────────────────────────────────────────────────────────────
-
-      /**
-       * Generate all unique 3D orientations (up to 6).
-       * Duplicate orientations (e.g. a cube) are removed automatically.
-       */
-      function generateRotations(l, w, h) {
-        const rots = [
-          { length: l, width: w, height: h },
-          { length: l, width: h, height: w },
-          { length: w, width: l, height: h },
-          { length: w, width: h, height: l },
-          { length: h, width: l, height: w },
-          { length: h, width: w, height: l },
-        ];
-        const unique = [];
-        rots.forEach((r) => {
-          if (
-            !unique.some(
-              (u) =>
-                u.length === r.length &&
-                u.width === r.width &&
-                u.height === r.height,
-            )
-          )
-            unique.push(r);
-        });
-        return unique;
-      }
-
-      /**
-       * Guillotine Cut — find the best space for an item.
-       * Spaces sorted lowest-y first (gravity), then nearest origin.
-       * Tries all rotations per space. Returns { x,y,z,length,width,height } or null.
-       */
-      function findBestPlacement(spaces, item) {
-        let best = null;
-        let bestTopHeight = Infinity;
-
-        for (const space of spaces) {
-          for (const rot of item.rotations) {
-            if (
-              rot.length <= space.length &&
-              rot.width <= space.width &&
-              rot.height <= space.height
-            ) {
-              const topHeight = space.y + rot.height;
-              if (
-                topHeight < bestTopHeight ||
-                (topHeight === bestTopHeight &&
-                  space.x + space.z < (best?.x + best?.z ?? Infinity))
-              ) {
-                bestTopHeight = topHeight;
-                best = {
-                  x: space.x,
-                  y: space.y,
-                  z: space.z,
-                  length: rot.length,
-                  width: rot.width,
-                  height: rot.height,
-                  spaceId: space.id,
-                };
-              }
-            }
-          }
-        }
-
-        return best;
-      }
-
-      function updateSpaces(spaces, placement) {
-        let newSpaces = [];
-
-        for (let sp of spaces) {
-          if (
-            placement.x >= sp.x + sp.length ||
-            placement.x + placement.length <= sp.x ||
-            placement.y >= sp.y + sp.height ||
-            placement.y + placement.height <= sp.y ||
-            placement.z >= sp.z + sp.width ||
-            placement.z + placement.width <= sp.z
-          ) {
-            newSpaces.push(sp);
-            continue;
-          }
-
-          const x1 = sp.x;
-          const x2 = sp.x + sp.length;
-          const y1 = sp.y;
-          const y2 = sp.y + sp.height;
-          const z1 = sp.z;
-          const z2 = sp.z + sp.width;
-
-          const px1 = placement.x;
-          const px2 = placement.x + placement.length;
-          const py1 = placement.y;
-          const py2 = placement.y + placement.height;
-          const pz1 = placement.z;
-          const pz2 = placement.z + placement.width;
-
-          if (px1 > x1) {
-            newSpaces.push({
-              x: x1,
-              y: y1,
-              z: z1,
-              length: px1 - x1,
-              width: sp.width,
-              height: sp.height,
-            });
-          }
-
-          if (px2 < x2) {
-            newSpaces.push({
-              x: px2,
-              y: y1,
-              z: z1,
-              length: x2 - px2,
-              width: sp.width,
-              height: sp.height,
-            });
-          }
-
-          if (pz1 > z1) {
-            newSpaces.push({
-              x: x1,
-              y: y1,
-              z: z1,
-              length: sp.length,
-              width: pz1 - z1,
-              height: sp.height,
-            });
-          }
-
-          if (pz2 < z2) {
-            newSpaces.push({
-              x: x1,
-              y: y1,
-              z: pz2,
-              length: sp.length,
-              width: z2 - pz2,
-              height: sp.height,
-            });
-          }
-
-          if (py2 < y2) {
-            newSpaces.push({
-              x: x1,
-              y: py2,
-              z: z1,
-              length: sp.length,
-              width: sp.width,
-              height: y2 - py2,
-            });
-          }
-        }
-
-        return pruneSpaces(newSpaces);
-      }
-
-      function pruneSpaces(spaces) {
-        return spaces.filter(
-          (a, i) =>
-            !spaces.some((b, j) => {
-              if (i === j) return false;
-              return (
-                a.x >= b.x &&
-                a.y >= b.y &&
-                a.z >= b.z &&
-                a.x + a.length <= b.x + b.length &&
-                a.y + a.height <= b.y + b.height &&
-                a.z + a.width <= b.z + b.width
-              );
-            }),
-        );
-      }
-
-      /**
-       * Pack as many items as possible into one container (boxDim).
-       * boxDim: { width (x), depth (z), height (y) }
-       * Returns a container-result object with .items[].
-       */
-      function tryPackInBox(items, boxType, boxDim) {
-        const box = {
-          type: boxType,
-          dimensions: boxDim,
-          items: [],
-          spaces: [
-            {
-              x: 0,
-              y: 0,
-              z: 0,
-              length: boxDim.width,
-              width: boxDim.depth,
-              height: boxDim.height,
-            },
-          ],
-        };
-        let runningWeight = 0;
-        // Weight capacity (kg): loadLimit is the max allowed packed weight.
-        const maxWeight =
-          boxDim.loadLimit != null ? boxDim.loadLimit : Infinity;
-        [...items]
-          .sort((a, b) => b.volume - a.volume)
-          .forEach((item) => {
-            if (runningWeight + (item.weight || 0) > maxWeight) return;
-            const pl = findBestPlacement(box.spaces, item, boxDim);
-            if (pl) {
-              box.items.push({ ...item, ...pl });
-              box.spaces = updateSpaces(box.spaces, pl, item);
-              runningWeight += item.weight || 0;
-            }
-          });
-        return box;
-      }
-
-      /** Fallback: force the single largest item into the container. */
-      function forcePackLargest(items, BOX_TYPES) {
-        if (!items.length) return null;
-        const boxType = Object.keys(BOX_TYPES).at(-1);
-        const boxDim = Object.values(BOX_TYPES).at(-1);
-        const box = {
-          type: boxType,
-          dimensions: boxDim,
-          items: [],
-          spaces: [
-            {
-              x: 0,
-              y: 0,
-              z: 0,
-              length: boxDim.width,
-              width: boxDim.depth,
-              height: boxDim.height,
-            },
-          ],
-        };
-        // Weight capacity (kg): loadLimit is the max allowed packed weight.
-        const maxWeight =
-          boxDim.loadLimit != null ? boxDim.loadLimit : Infinity;
-        if ((items[0].weight || 0) > maxWeight) return null;
-        const pl = findBestPlacement(box.spaces, items[0], boxDim);
-        if (pl) {
-          box.items.push({ ...items[0], ...pl });
-          return box;
-        }
-        return null;
-      }
-
-      function calculateTotalVolume(boxes) {
-        return boxes.reduce(
-          (s, b) =>
-            s + b.dimensions.width * b.dimensions.height * b.dimensions.depth,
-          0,
-        );
-      }
+      // ─── PACKING ENGINE (now runs on the backend) ─
+      // The Guillotine-Cut packing algorithm (4 strategies: First-Fit
+      // Decreasing, Best-Fit Max-Fill, Similar-Size Clustering, and the
+      // beam-search Min-Chargeable-Weight strategy) now lives server-side
+      // in src/packingEngine.js. This client only calls POST /api/optimize
+      // and renders whatever layout comes back.
 
       function getVolumetricWeight(box, divisor = 6000) {
         // dimensions in cm → kg
         return (box.length * box.width * box.height) / divisor;
       }
 
-      function calculateFreightCostForPackedBox(packedBox) {
-        const boxDim = packedBox.dimensions || {};
-        const itemsWeight = packedBox.items.reduce(
-          (s, i) => s + (i.weight || 0),
-          0,
-        );
-        const boxOwnWeight = boxDim.boxWeight || 0;
-        const totalWeightWithBox = itemsWeight + boxOwnWeight;
-
-        const volumetricWeight = getVolumetricWeight({
-          length: boxDim.depth,
-          width: boxDim.width,
-          height: boxDim.height,
-        });
-
-        const chargeableWeight = Math.max(totalWeightWithBox, volumetricWeight);
-        return chargeableWeight * FREIGHT_TARIFF_PER_KG;
-      }
-
-      function calculateChargeableWeightForPackedBox(packedBox) {
-        const boxDim = packedBox.dimensions || {};
-        const itemsWeight = packedBox.items.reduce(
-          (s, i) => s + (i.weight || 0),
-          0,
-        );
-        const boxOwnWeight = boxDim.boxWeight || 0;
-        const totalWeightWithBox = itemsWeight + boxOwnWeight;
-        const volumetricWeight = getVolumetricWeight({
-          length: boxDim.depth,
-          width: boxDim.width,
-          height: boxDim.height,
-        });
-        return Math.max(totalWeightWithBox, volumetricWeight);
-      }
-
-      function calculateTotalFreightCost(packedBoxes) {
-        return packedBoxes.reduce(
-          (sum, b) => sum + calculateFreightCostForPackedBox(b),
-          0,
-        );
-      }
-
-      // ── Strategy 1: First-Fit Decreasing ──────────────────────────────────
-      function packWithSmallestFirst(items, BOX_TYPES) {
-        const boxes = [],
-          remaining = [...items];
-
-        while (remaining.length) {
-          let packed = false;
-          for (const [type, dim] of Object.entries(BOX_TYPES)) {
-            const res = tryPackInBox(remaining, type, dim);
-            if (res.items.length) {
-              boxes.push(res);
-              res.items.forEach((pi) => {
-                const i = remaining.findIndex((x) => x._uid === pi._uid);
-                if (i !== -1) remaining.splice(i, 1);
-              });
-              packed = true;
-              break;
-            }
-          }
-          if (!packed) {
-            const res = forcePackLargest(remaining, BOX_TYPES);
-            if (res) {
-              boxes.push(res);
-
-              const i = remaining.findIndex(
-                (x) => x._uid === res.items[0]._uid,
-              );
-              if (i !== -1) remaining.splice(i, 1);
-            } else break;
-          }
-        }
-        return boxes;
-      }
-
-      // ── Strategy 2: Best-Fit with Maximum Fill Rate ────────────────────────
-      function packWithMaxFill(items, BOX_TYPES) {
-        const boxes = [],
-          remaining = [...items];
-        while (remaining.length) {
-          let bestBox = null,
-            bestEff = 0;
-          for (const [type, dim] of Object.entries(BOX_TYPES)) {
-            const res = tryPackInBox([...remaining], type, dim);
-            if (res.items.length) {
-              const eff =
-                res.items.reduce((s, i) => s + i.volume, 0) /
-                (dim.width * dim.height * dim.depth);
-              if (eff > bestEff) {
-                bestEff = eff;
-                bestBox = res;
-              }
-            }
-          }
-          if (bestBox) {
-            boxes.push(bestBox);
-            bestBox.items.forEach((pi) => {
-              const i = remaining.findIndex((x) => x._uid === pi._uid);
-              if (i !== -1) remaining.splice(i, 1);
-            });
-          } else {
-            const res = forcePackLargest(remaining, BOX_TYPES);
-            if (res) {
-              boxes.push(res);
-              const i = remaining.findIndex(
-                (x) => x._uid === res.items[0]._uid,
-              );
-              if (i !== -1) remaining.splice(i, 1);
-            } else break;
-          }
-        }
-        return boxes;
-      }
-
-      // ── Strategy 3: Similar-Size Clustering ───────────────────────────────
-      function packBySimilarSize(items, BOX_TYPES) {
-        const boxes = [],
-          remaining = [...items].sort((a, b) => b.volume - a.volume);
-        while (remaining.length) {
-          const ref = remaining[0];
-          let bestBox = null;
-          for (const [type, dim] of Object.entries(BOX_TYPES)) {
-            if (tryPackInBox([ref], type, dim).items.length) {
-              const similar = remaining
-                .slice(1)
-                .filter(
-                  (it) =>
-                    it.volume >= ref.volume * 0.3 &&
-                    it.volume <= ref.volume * 1.5,
-                );
-              const res = tryPackInBox([ref, ...similar], type, dim);
-              if (!bestBox || res.items.length > bestBox.items.length)
-                bestBox = res;
-            }
-          }
-          if (bestBox && bestBox.items.length) {
-            boxes.push(bestBox);
-            bestBox.items.forEach((pi) => {
-              const i = remaining.findIndex((x) => x._uid === pi._uid);
-              if (i !== -1) remaining.splice(i, 1);
-            });
-          } else {
-            const res = forcePackLargest(remaining, BOX_TYPES);
-            if (res) {
-              boxes.push(res);
-              const i = remaining.findIndex(
-                (x) => x._uid === res.items[0]._uid,
-              );
-              if (i !== -1) remaining.splice(i, 1);
-            } else break;
-          }
-        }
-        return boxes;
-      }
-
-      // ── Strategy 4: Minimize Total Chargeable Weight (Global) ─────────────
-      function packByMinChargeableWeight(items, BOX_TYPES) {
-        const BEAM_WIDTH = 4;
-        const startState = {
-          remaining: [...items],
-          boxes: [],
-          score: 0, // total chargeable weight
-          count: 0, // placed item count
-        };
-
-        let states = [startState];
-        let bestState = null;
-
-        const betterGlobal = (a, b) => {
-          if (a.count !== b.count) return a.count > b.count;
-          return a.score < b.score;
-        };
-        const beamCompare = (a, b) => {
-          if (a.score !== b.score) return a.score - b.score;
-          return b.count - a.count;
-        };
-
-        const maxIters = Math.max(1, items.length);
-        for (let iter = 0; iter < maxIters; iter++) {
-          const next = [];
-          let anyProgress = false;
-
-          for (const st of states) {
-            if (!st.remaining.length) {
-              next.push(st);
-              if (!bestState || betterGlobal(st, bestState)) bestState = st;
-              continue;
-            }
-
-            let generated = false;
-            for (const [type, dim] of Object.entries(BOX_TYPES)) {
-              const res = tryPackInBox(st.remaining, type, dim);
-              if (!res.items.length) continue;
-              generated = true;
-              anyProgress = true;
-
-              const packedIds = new Set(res.items.map((x) => x._uid));
-              const nextRemaining = st.remaining.filter(
-                (x) => !packedIds.has(x._uid),
-              );
-              next.push({
-                remaining: nextRemaining,
-                boxes: st.boxes.concat([res]),
-                score: st.score + calculateChargeableWeightForPackedBox(res),
-                count: st.count + res.items.length,
-              });
-            }
-
-            if (!generated) {
-              const res = forcePackLargest(st.remaining, BOX_TYPES);
-              if (res && res.items.length) {
-                anyProgress = true;
-                const packedIds = new Set(res.items.map((x) => x._uid));
-                const nextRemaining = st.remaining.filter(
-                  (x) => !packedIds.has(x._uid),
-                );
-                next.push({
-                  remaining: nextRemaining,
-                  boxes: st.boxes.concat([res]),
-                  score: st.score + calculateChargeableWeightForPackedBox(res),
-                  count: st.count + res.items.length,
-                });
-              }
-            }
-          }
-
-          if (!anyProgress || !next.length) break;
-          next.sort(beamCompare);
-          states = next.slice(0, BEAM_WIDTH);
-          for (const st of states) {
-            if (!bestState || betterGlobal(st, bestState)) bestState = st;
-          }
-        }
-
-        return bestState && bestState.boxes.length ? bestState.boxes : [];
-      }
-
-      /**
-       * packItemsIntoBoxes — MAIN ALGORITHM
-       *
-       * Runs all 4 strategies and returns the best overall result.
-       */
-      function packItemsIntoBoxes(items, BOX_TYPES) {
-        const strategies = [
-          packWithSmallestFirst(items, BOX_TYPES),
-          packWithMaxFill(items, BOX_TYPES),
-          packBySimilarSize(items, BOX_TYPES),
-          packByMinChargeableWeight(items, BOX_TYPES),
-        ];
-
-        // Count total items placed by each strategy
-        const countItems = (boxes) =>
-          boxes.reduce((s, b) => s + b.items.length, 0);
-
-        // Primary: most items placed.
-        // Tiebreakers: lowest freight cost → least container volume.
-        let best = strategies[0];
-        let bestCount = countItems(strategies[0]);
-        let bestCost = calculateTotalFreightCost(strategies[0]);
-        let bestVol = calculateTotalVolume(strategies[0]);
-        for (let i = 1; i < strategies.length; i++) {
-          const count = countItems(strategies[i]);
-          const cost = calculateTotalFreightCost(strategies[i]);
-          const vol = calculateTotalVolume(strategies[i]);
-          if (
-            count > bestCount ||
-            (count === bestCount && cost < bestCost) ||
-            (count === bestCount && cost === bestCost && vol < bestVol)
-          ) {
-            best = strategies[i];
-            bestCount = count;
-            bestCost = cost;
-            bestVol = vol;
-          }
-        }
-        return best; // array of packed-container objects
-      }
-
-      // ─── OPTIMIZE ───────────────────────────────
-      function runOptimize() {
+      // ─── OPTIMIZE (via backend API) ─────────────
+      async function runOptimize() {
         document.getElementById("vis-empty").style.display = "none";
 
         const activeBoxes = settingsData.boxes.filter((p) => p.active);
         if (!activeBoxes.length) {
           alert("No active box templates found. Add boxes in Settings.");
+          document.getElementById("vis-empty").style.display = "flex";
           return;
         }
-        // Collect & expand SKU instances
-        const rawSkus = [];
-        settingsData.skus
-          .filter((b) => b.active)
-          .forEach((b) => {
-            const id = b.sku_id || b.id;
-            if (S.qty[id] > 0) {
-              for (let i = 0; i < S.qty[id]; i++) rawSkus.push({ ...b, id });
-            }
-          });
-        if (!rawSkus.length) {
+
+        // Collect quantities keyed by SKU id — the stateful /api/optimize
+        // mode uses these against the boxes/SKUs already stored server-side.
+        const quantities = {};
+        Object.keys(S.qty).forEach((id) => {
+          if (S.qty[id] > 0) quantities[id] = S.qty[id];
+        });
+        if (!Object.keys(quantities).length) {
           alert("Please select at least one SKU with quantity > 0");
+          document.getElementById("vis-empty").style.display = "flex";
           return;
         }
 
-        // Convert to packing-engine item format
-        const items = rawSkus.map((b, idx) => ({
-          _uid: idx,
-          id: b.id,
-          name: b.name,
-          color: b.color || "#3B82F6",
-          weight: b.weight || 0,
-          volume: b.width * b.length * b.height,
-          length: b.width,
-          width: b.length,
-          height: b.height,
-          rotations: generateRotations(b.width, b.length, b.height),
+        let result;
+        try {
+          result = await api.optimize({ quantities });
+        } catch (err) {
+          alert("Optimization failed: " + err.message);
+          document.getElementById("vis-empty").style.display = "flex";
+          return;
+        }
+
+        // The API response is already shaped exactly like the 3D renderer
+        // and analytics panel expect (see README "Response shape"), so we
+        // just assign it directly — no local packing math needed.
+        S.boxesData = (result.boxes || []).map((pd) => ({
+          boxId: pd.boxId,
+          boxName: pd.boxName,
+          layout: pd.layout,
+          layerDefs: pd.layerDefs,
+          totalWeight: pd.totalWeight,
+          actualHeight: pd.actualHeight,
+          placedQty: pd.placedQty,
+          freightCost: pd.freightCost,
+          chargeableWeight: pd.chargeableWeight,
         }));
-        items.sort((a, b) => b.volume - a.volume);
 
-        // Build BOX_TYPES from active boxes
-        const BOX_TYPES = {};
-        settingsData.boxes.forEach((p) => {
-          if (p.active) {
-            BOX_TYPES[p.id] = {
-              width: p.width,
-              depth: p.length,
-              height: p.height || 160,
-              name: p.name,
-              boxWeight: p.weight, // per-box weight limit
-              loadLimit: p.loadLimit,
-            };
-          }
-        });
-        // Run packItemsIntoBoxes — returns one result object per pallet
-        const packedBoxes = packItemsIntoBoxes(items, BOX_TYPES);
-
-        // ── Build one layout per packed box ──────────────────────────────
-        S.boxesData = [];
-        let globalSeq = 0;
-
-        packedBoxes.forEach((pb) => {
-          // pb.type is the box id chosen by the algorithm
-          const p =
-            settingsData.boxes.find((i) => i.id === pb.type) ||
-            settingsData.boxes[0];
-
-          const layout = [];
-          const layerDefs = [];
-          let runningWeight = 0;
-          const allPlaced = pb.items; // engine already enforced all weight limits
-
-          allPlaced.forEach((item) => {
-            runningWeight += item.weight || 0;
-          });
-
-          const yValues = [...new Set(allPlaced.map((i) => i.y))].sort(
-            (a, b) => a - b,
-          );
-          const yToLayer = {};
-          yValues.forEach((y, idx) => {
-            yToLayer[y] = idx;
-          });
-          yValues.forEach(() =>
-            layerDefs.push({ baseZ: 0, maxH: 0, footprint: [], items: [] }),
-          );
-
-          allPlaced.forEach((item) => {
-            const li = yToLayer[item.y];
-            const ld = layerDefs[li];
-            const layoutItem = {
-              id: globalSeq++,
-              type: item.id,
-              x: item.x,
-              y: item.z,
-              z: item.y,
-              layer: li + 1,
-              w: item.length,
-              d: item.width,
-              h: item.height,
-              kg: item.weight,
-              color: item.color,
-              name: item.name,
-            };
-            layout.push(layoutItem);
-            ld.items.push(layoutItem);
-            ld.footprint.push({
-              x1: item.x,
-              y1: item.z,
-              x2: item.x + item.length,
-              y2: item.z + item.width,
-            });
-            if (item.height > ld.maxH) ld.maxH = item.height;
-          });
-
-          const actualHeight = layout.length
-            ? Math.max(...layout.map((i) => i.z + i.h))
-            : 0;
-          const placedQty = {};
-          layout.forEach((item) => {
-            placedQty[item.type] = (placedQty[item.type] || 0) + 1;
-          });
-
-          // Store boxId per box so renderers/analytics know which template was used
-          S.boxesData.push({
-            boxId: p.id,
-            layout,
-            layerDefs,
-            totalWeight: runningWeight,
-            actualHeight,
-            placedQty,
-          });
-        });
-
-        // S.boxId = first box used (legacy fallback for analytics)
         S.boxId = S.boxesData[0]?.boxId || settingsData.boxes[0].id;
 
         // ── Set active box (default: first) ─────────────────────────────
         const prevBoxCount = S.boxesData_prev ? S.boxesData_prev.length : 0;
-        const newBoxCount = packedBoxes.length;
+        const newBoxCount = S.boxesData.length;
         const shouldViewAll = newBoxCount > prevBoxCount && newBoxCount > 1;
 
         if (shouldViewAll) {
           S.activeBoxIdx = -1;
         } else if (prevBoxCount === 0) {
-          // First run — select first box if only 1, else view all
           S.activeBoxIdx = newBoxCount === 1 ? 0 : -1;
         } else if (newBoxCount < prevBoxCount) {
-          // Fewer boxes than before — select last box in array
           S.activeBoxIdx = newBoxCount - 1;
         }
 
-        // Show/hide Pallet Analytics panel and update grid
         const rp = document.getElementById("right-panel");
         const ag = document.querySelector(".app");
         if (S.activeBoxIdx === -1) {
@@ -4991,7 +4225,6 @@
           if (ag) ag.style.gridTemplateColumns = "380px 1fr 300px";
         }
 
-        // else: keep current S.activeBoxIdx as-is
         S.boxesData_prev = S.boxesData.map((pd) => ({ ...pd }));
         _syncActiveBox();
 

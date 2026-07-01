@@ -14,6 +14,9 @@ npm install
 npm start          # production: node src/server.js, listens on PORT (default 3000)
 npm run dev         # development: nodemon src/server.js, auto-restarts on changes in src/
 ```
+## Packing Optimizer Page (FE)
+
+- **Frontend page:** http://localhost:3000
 
 ## API Docs (Swagger)
 

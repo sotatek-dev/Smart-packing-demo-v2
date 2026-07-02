@@ -317,31 +317,27 @@ app.get("/api/settings", (req, res) => {
  */
 app.put("/api/settings", (req, res) => {
   const { boxes, skus } = req.body || {};
-  if (Array.isArray(boxes)) store.boxes = boxes.map(normalizeBox);
-  if (Array.isArray(skus)) store.skus = skus.map(normalizeSku);
+
+  if (Array.isArray(boxes)) {
+    boxes.forEach((raw) => {
+      const box = normalizeBox(raw);
+      const idx = store.boxes.findIndex((b) => b.id === box.id);
+      if (idx === -1) store.boxes.unshift(box);
+      else store.boxes[idx] = box;
+    });
+  }
+
+  if (Array.isArray(skus)) {
+    skus.forEach((raw) => {
+      const sku = normalizeSku(raw);
+      const idx = store.skus.findIndex((s) => s.id === sku.id);
+      if (idx === -1) store.skus.unshift(sku);
+      else store.skus[idx] = sku;
+    });
+  }
   persist();
   res.json({ boxes: store.boxes, skus: store.skus });
 });
-
-// ─── Optimize ────────────────────────────────────────────────────────────
-// Shared core: validates boxes/skus and runs the packing engine.
-function runOptimize(boxes, skus) {
-  if (!boxes.length) {
-    const err = new Error("No active box templates found");
-    err.status = 400;
-    throw err;
-  }
-  if (!skus.length) {
-    const err = new Error("Please select at least one SKU with quantity > 0");
-    err.status = 400;
-    throw err;
-  }
-
-  boxes.forEach((b) => validateDims(b, "Box"));
-  skus.forEach((s) => validateDims(s, "SKU"));
-
-  return runPacking(skus, boxes);
-}
 
 // ─── Optimize ────────────────────────────────────────────────────────────
 // Stateless mode: pass `boxes` and `skus` (each sku needs a `qty`) directly.

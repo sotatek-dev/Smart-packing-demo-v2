@@ -275,49 +275,93 @@ function handleSearch(type, val) {
 }
 window.handleSearch = handleSearch;
 
-// ─── CRUD OPERATIONS (via backend API) ──────────────────────────────────
-async function addEntity(type) {
-  try {
-    const created = type === "boxes" ? await Api.createBox({}) : await Api.createSku({});
-    created._new = true;
-    settingsData[type].unshift(created);
-    renderAll();
-    initSkuList();
-    showToast(`New ${type === "boxes" ? "box" : "SKU"} added!`);
+// ─── CRUD OPERATIONS ──────────────────────────────────────────────────────
+// Edits are staged locally (in `settingsData`) only. Nothing hits the
+// server until "Save All Changes":
+//   - additions/edits go out as one bulk PUT /api/settings, which the
+//     backend now UPSERTS (update-by-id or insert) rather than wiping
+//     the whole collection, so anything not touched here is left alone.
+//   - deletions go out as individual DELETE /api/boxes|skus/:id calls,
+//     since the bulk endpoint no longer removes anything on its own.
+let hasUnsavedChanges = false;
+const pendingDeletions = { boxes: new Set(), skus: new Set() };
 
-    const overlay = document.getElementById("settings-modal-overlay");
-    if (overlay && !overlay.classList.contains("show")) overlay.classList.add("show");
-    const tabId = type === "boxes" ? "tab-box-template" : "tab-sku";
-    document.querySelectorAll(".tab-btn").forEach((btn) => btn.classList.toggle("active", btn.dataset.tab === tabId));
-    document.querySelectorAll(".tab-pane").forEach((pane) => pane.classList.toggle("active", pane.id === tabId));
+function markDirty() {
+  hasUnsavedChanges = true;
+  const saveBtn = document.getElementById("save-settings");
+  if (saveBtn) saveBtn.classList.add("has-changes");
+}
 
-    const newId = getEntityId(created);
-    setTimeout(() => {
-      const card = document.querySelector(`.entity-card[data-id="${newId}"]`);
-      if (card) {
-        card.scrollIntoView({ behavior: "smooth", block: "center" });
-        card.querySelector("input")?.focus();
-      }
-    }, 60);
-  } catch (err) {
-    showToast(err.message || "Failed to add record", "error");
-  }
+function clearDirty() {
+  hasUnsavedChanges = false;
+  pendingDeletions.boxes.clear();
+  pendingDeletions.skus.clear();
+  const saveBtn = document.getElementById("save-settings");
+  if (saveBtn) saveBtn.classList.remove("has-changes");
+}
+
+function localNormalizeBox(b) {
+  return {
+    id: b.id || "box_" + Date.now() + Math.floor(Math.random() * 1000),
+    name: b.name || "",
+    type: b.type || "",
+    width: Number(b.width) || 0,
+    length: Number(b.length) || 0,
+    height: Number(b.height) || 0,
+    weight: Number(b.weight) || 0,
+    loadLimit: Number(b.loadLimit) || 0,
+    active: b.active !== false,
+  };
+}
+
+function localNormalizeSku(s) {
+  const id = s.sku_id || s.id || "sku_" + Date.now() + Math.floor(Math.random() * 1000);
+  return {
+    id,
+    sku_id: id,
+    name: s.name || "New SKU",
+    width: Number(s.width) || 10,
+    length: Number(s.length) || 10,
+    height: Number(s.height) || 10,
+    weight: Number(s.weight) || 1,
+    color: s.color || SKU_COLORS[Math.floor(Math.random() * SKU_COLORS.length)],
+    active: s.active !== false,
+  };
+}
+
+function addEntity(type) {
+  const created = type === "boxes" ? localNormalizeBox({}) : localNormalizeSku({});
+  created._new = true;
+  settingsData[type].unshift(created);
+  markDirty();
+  renderAll();
+  initSkuList(); // reflect on the main page immediately, before Save
+  showToast(`New ${type === "boxes" ? "box" : "SKU"} added — click "Save All Changes" to persist it.`, "info");
+
+  const overlay = document.getElementById("settings-modal-overlay");
+  if (overlay && !overlay.classList.contains("show")) overlay.classList.add("show");
+  const tabId = type === "boxes" ? "box-template" : "sku";
+  modalOverlay.querySelectorAll(".nav-item").forEach((ni) => ni.classList.toggle("active", ni.dataset.tab === tabId));
+  modalOverlay.querySelectorAll(".settings-sec").forEach((sec) => sec.classList.toggle("active", sec.id === "tab-" + tabId));
+
+  const newId = getEntityId(created);
+  setTimeout(() => {
+    const card = document.querySelector(`.entity-card[data-id="${newId}"]`);
+    if (card) {
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+      card.querySelector("input")?.focus();
+    }
+  }, 60);
 }
 window.addEntity = addEntity;
 
-async function updateEntity(type, id, field, value) {
+function updateEntity(type, id, field, value) {
   const item = settingsData[type].find((i) => i.id === id || i.sku_id === id);
   if (!item) return;
-  const prevValue = item[field];
-  item[field] = value; // optimistic update
-  try {
-    const updated = type === "boxes" ? await Api.updateBox(id, { [field]: value }) : await Api.updateSku(id, { [field]: value });
-    Object.assign(item, updated);
-  } catch (err) {
-    item[field] = prevValue; // revert on failure
-    showToast(err.message || "Failed to save change", "error");
-    renderAll();
-  }
+  item[field] = value; // staged locally only — no network call
+  markDirty();
+  // Reflect the change on the main page (box picker / SKU list) right
+  // away, without waiting for "Save All Changes".
   if (type === "skus") initSkuList();
   else initConfigPanel();
 }
@@ -325,20 +369,76 @@ window.updateEntity = updateEntity;
 
 function deleteEntity(type, id) {
   const label = type === "boxes" ? "box" : "SKU";
-  showConfirm(`Are you sure you want to delete this ${label}?`, async () => {
-    try {
-      if (type === "boxes") await Api.deleteBox(id);
-      else await Api.deleteSku(id);
-      settingsData[type] = settingsData[type].filter((i) => i.id !== id && i.sku_id !== id);
-      renderAll();
-      initSkuList();
-      showToast("Record deleted");
-    } catch (err) {
-      showToast(err.message || "Failed to delete record", "error");
-    }
+  showConfirm(`Are you sure you want to delete this ${label}? This takes effect once you Save.`, () => {
+    settingsData[type] = settingsData[type].filter((i) => i.id !== id && i.sku_id !== id);
+    pendingDeletions[type].add(id);
+    markDirty();
+    renderAll();
+    initSkuList(); // reflect removal on the main page immediately, before Save
+    showToast('Marked for deletion — click "Save All Changes" to persist it.', "info");
   });
 }
 window.deleteEntity = deleteEntity;
+
+// Persists staged local edits: upserts changed/added items via a single
+// bulk PUT /api/settings, and fires the individual DELETE calls needed
+// for anything removed in this session.
+async function saveAllChanges() {
+  const saveBtn = document.getElementById("save-settings");
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Saving...";
+  }
+  try {
+    const deleteResults = await Promise.allSettled([
+      ...[...pendingDeletions.boxes].map((id) => Api.deleteBox(id)),
+      ...[...pendingDeletions.skus].map((id) => Api.deleteSku(id)),
+    ]);
+    const deleteFailure = deleteResults.find((r) => r.status === "rejected" && !/not found/i.test(r.reason?.message || ""));
+    if (deleteFailure) throw deleteFailure.reason;
+
+    const payload = {
+      boxes: settingsData.boxes.map(({ _new, ...b }) => b),
+      skus: settingsData.skus.map(({ _new, ...s }) => s),
+    };
+    const data = await Api.putSettings(payload);
+    settingsData.boxes = data.boxes || [];
+    settingsData.skus = data.skus || [];
+    window.settingsData = settingsData;
+    clearDirty();
+    renderAll();
+    initSkuList();
+    showToast("All changes saved!");
+    closeModal();
+  } catch (err) {
+    showToast(err.message || "Failed to save changes", "error");
+  } finally {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = "Save All Changes";
+    }
+  }
+}
+
+// Discards any unsaved local edits (including pending deletions) by
+// reloading the last saved state from the server.
+async function discardChanges() {
+  if (hasUnsavedChanges) {
+    try {
+      const data = await Api.getSettings();
+      settingsData.boxes = data.boxes || [];
+      settingsData.skus = data.skus || [];
+      window.settingsData = settingsData;
+      clearDirty();
+      renderAll();
+      initSkuList();
+    } catch (err) {
+      console.error("Failed to reload settings:", err);
+    }
+  }
+  closeModal();
+}
+
 
 function showConfirm(message, onConfirm) {
   const overlay = document.createElement("div");
@@ -445,8 +545,8 @@ modalOverlay.innerHTML = `
       </div>
     </div>
     <div class="modal-ftr">
-      <button class="btn-close" style="background:#eee; color:#333; border:none" id="cancel-settings">Close</button>
-      <button class="btn-add" id="save-settings">Close</button>
+      <button class="btn-close" style="background:#eee; color:#333; border:none" id="cancel-settings">Cancel</button>
+      <button class="btn-add" id="save-settings">Save All Changes</button>
     </div>
   </div>
 `;
@@ -470,9 +570,11 @@ btnSettings.onclick = () => {
   modalOverlay.classList.add("show");
 };
 const closeModal = () => modalOverlay.classList.remove("show");
-document.getElementById("close-modal").onclick = closeModal;
-document.getElementById("cancel-settings").onclick = closeModal;
-document.getElementById("save-settings").onclick = closeModal;
+// The [x] icon and "Cancel" both discard unsaved local edits and reload
+// from the server. Only "Save All Changes" persists via bulk PUT /api/settings.
+document.getElementById("close-modal").onclick = discardChanges;
+document.getElementById("cancel-settings").onclick = discardChanges;
+document.getElementById("save-settings").onclick = saveAllChanges;
 
 // ─── SKU LIST (left panel) ───────────────────────────────────────────────
 function initSkuList() {
